@@ -1,0 +1,26 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build and Run C Program",
+			"type": "shell",
+			"command": "gcc main.c -o main.exe -I\"C:\\SDL2\\x86_64-w64-mingw32\\include\\SDL2\" -L\"C:\\SDL2\\x86_64-w64-mingw32\\lib\" -lmingw32 -lSDL2main -lSDL2; if ($?) { .\\main.exe }",
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Build GUI App",
+			"type": "shell",
+			"command": "gcc gui_app.c -I\"C:\\SDL2\\x86_64-w64-mingw32\\include\\SDL2\" -L\"C:\\SDL2\\x86_64-w64-mingw32\\lib\" -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -o gui_app.exe",
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	]
+}
