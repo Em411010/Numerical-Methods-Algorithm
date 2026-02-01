@@ -11,9 +11,9 @@
 			"group": "build"
 		},
 		{
-			"label": "Build GUI App",
+			"label": "Build Fixed Point Iteration",
 			"type": "shell",
-			"command": "gcc gui_app.c -I\"C:\\SDL2\\x86_64-w64-mingw32\\include\\SDL2\" -L\"C:\\SDL2\\x86_64-w64-mingw32\\lib\" -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -o gui_app.exe",
+			"command": "gcc fixed_point_iteration_quadratic.c -I\"C:\\SDL2\\x86_64-w64-mingw32\\include\\SDL2\" -L\"C:\\SDL2\\x86_64-w64-mingw32\\lib\" -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -o fixed_point_iteration_quadratic.exe",
 			"problemMatcher": [
 				"$gcc"
 			],
