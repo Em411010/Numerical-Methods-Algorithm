@@ -13,7 +13,7 @@
 		{
 			"label": "Build Fixed Point Iteration",
 			"type": "shell",
-			"command": "gcc fixed_point_iteration_quadratic.c -I\"C:\\SDL2\\x86_64-w64-mingw32\\include\\SDL2\" -L\"C:\\SDL2\\x86_64-w64-mingw32\\lib\" -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -o fixed_point_iteration_quadratic.exe",
+			"command": "gcc false_position_exponential.c -I\"C:\\SDL2\\x86_64-w64-mingw32\\include\\SDL2\" -L\"C:\\SDL2\\x86_64-w64-mingw32\\lib\" -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -o false_position_exponential.exe",
 			"problemMatcher": [
 				"$gcc"
 			],
