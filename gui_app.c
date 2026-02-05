@@ -55,7 +55,6 @@ double f(double x, double a, double b, double c) {
     return a * x * x + b * x + c;
 }
 
-// Helper functions for text rendering
 void renderText(SDL_Renderer* renderer, TTF_Font* font, const char* text, int x, int y, SDL_Color color) {
     SDL_Surface* surface = TTF_RenderText_Blended(font, text, color);
     if (!surface) return;
