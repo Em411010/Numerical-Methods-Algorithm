@@ -13,7 +13,11 @@
 		{
 			"label": "Build GUI App",
 			"type": "shell",
+<<<<<<< HEAD
 			"command": "gcc gui_app.c -I\"C:\\SDL2\\x86_64-w64-mingw32\\include\\SDL2\" -L\"C:\\SDL2\\x86_64-w64-mingw32\\lib\" -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -o gui_app.exe",
+=======
+			"command": "gcc Elimination_Linear_Equation.c -I\"C:\\SDL2\\x86_64-w64-mingw32\\include\\SDL2\" -L\"C:\\SDL2\\x86_64-w64-mingw32\\lib\" -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -o elimination_linear_equation.exe",
+>>>>>>> bef025c45777913d3af2021af72a168fdd67e260
 			"problemMatcher": [
 				"$gcc"
 			],

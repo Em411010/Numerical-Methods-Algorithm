@@ -9,14 +9,14 @@
 #define WINDOW_WIDTH 1400
 #define WINDOW_HEIGHT 800
 
-// Iteration data structure
+// Data structure for storing iteration results
 typedef struct {
     double xn;
     double xn1;
     double error;
 } IterationRow;
 
-// UI Element structure
+// UI component structures
 typedef struct {
     SDL_Rect rect;
     char label[50];
@@ -31,7 +31,14 @@ typedef struct {
     int clicked;
 } Button;
 
-// Fixed point iteration methods
+typedef struct {
+    SDL_Rect rect;
+    char formula[80];
+    int selected;
+    int hovered;
+} MethodOption;
+
+// Transform f(x) = ax² + bx + c into g(x) for different methods
 double g(double x, double a, double b, double c, int method) {
     switch(method) {
         case 1: return -(a * x * x + c) / b;
@@ -51,12 +58,49 @@ double g(double x, double a, double b, double c, int method) {
     }
 }
 
+// Original quadratic function f(x) = ax² + bx + c
 double f(double x, double a, double b, double c) {
     return a * x * x + b * x + c;
 }
 
+// Format equation with proper signs and superscript notation
+void formatEquation(char* buffer, int a, int b, int c) {
+    char part1[50], part2[50], part3[50];
+    
+    if (a == 1) {
+        strcpy(part1, "x²");
+    } else if (a == -1) {
+        strcpy(part1, "-x²");
+    } else {
+        sprintf(part1, "%dx²", a);
+    }
+    
+    if (b == 0) {
+        strcpy(part2, "");
+    } else if (b == 1) {
+        strcpy(part2, " + x");
+    } else if (b == -1) {
+        strcpy(part2, " - x");
+    } else if (b > 0) {
+        sprintf(part2, " + %dx", b);
+    } else {
+        sprintf(part2, " - %dx", -b);
+    }
+    
+    if (c == 0) {
+        strcpy(part3, "");
+    } else if (c > 0) {
+        sprintf(part3, " + %d", c);
+    } else {
+        sprintf(part3, " - %d", -c);
+    }
+    
+    sprintf(buffer, "Equation: %s%s%s = 0", part1, part2, part3);
+}
+
+// Render text with UTF-8 support for Unicode characters
 void renderText(SDL_Renderer* renderer, TTF_Font* font, const char* text, int x, int y, SDL_Color color) {
-    SDL_Surface* surface = TTF_RenderText_Blended(font, text, color);
+    SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text, color);
     if (!surface) return;
     
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -67,8 +111,8 @@ void renderText(SDL_Renderer* renderer, TTF_Font* font, const char* text, int x,
     SDL_DestroyTexture(texture);
 }
 
+// Render input box with label and value
 void renderInputBox(SDL_Renderer* renderer, TTF_Font* font, InputBox* box) {
-    // Box background
     if (box->active) {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     } else {
@@ -76,23 +120,20 @@ void renderInputBox(SDL_Renderer* renderer, TTF_Font* font, InputBox* box) {
     }
     SDL_RenderFillRect(renderer, &box->rect);
     
-    // Box border
     SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
     SDL_RenderDrawRect(renderer, &box->rect);
     
-    // Label
     SDL_Color labelColor = {50, 50, 50, 255};
     renderText(renderer, font, box->label, box->rect.x - 80, box->rect.y + 5, labelColor);
     
-    // Value
     SDL_Color textColor = {0, 0, 0, 255};
     if (strlen(box->value) > 0) {
         renderText(renderer, font, box->value, box->rect.x + 5, box->rect.y + 5, textColor);
     }
 }
 
+// Render button with hover and click effects
 void renderButton(SDL_Renderer* renderer, TTF_Font* font, Button* btn) {
-    // Button background
     if (btn->clicked) {
         SDL_SetRenderDrawColor(renderer, 60, 120, 60, 255);
     } else if (btn->hovered) {
@@ -102,11 +143,9 @@ void renderButton(SDL_Renderer* renderer, TTF_Font* font, Button* btn) {
     }
     SDL_RenderFillRect(renderer, &btn->rect);
     
-    // Button border
     SDL_SetRenderDrawColor(renderer, 40, 90, 40, 255);
     SDL_RenderDrawRect(renderer, &btn->rect);
     
-    // Button text (centered)
     SDL_Color textColor = {255, 255, 255, 255};
     SDL_Surface* surface = TTF_RenderText_Blended(font, btn->text, textColor);
     if (surface) {
@@ -120,6 +159,7 @@ void renderButton(SDL_Renderer* renderer, TTF_Font* font, Button* btn) {
     }
 }
 
+// Draw parabola graph with axes, grid, and root marker
 void drawGraph(SDL_Renderer* renderer, double a, double b, double c, double root, int hasRoot) {
     int graphX = 930;
     int graphY = 150;
@@ -129,12 +169,10 @@ void drawGraph(SDL_Renderer* renderer, double a, double b, double c, double root
     int centerX = graphX + graphW / 2;
     int centerY = graphY + graphH / 2;
     
-    // Graph background
     SDL_SetRenderDrawColor(renderer, 30, 35, 45, 255);
     SDL_Rect graphRect = {graphX, graphY, graphW, graphH};
     SDL_RenderFillRect(renderer, &graphRect);
     
-    // Grid lines
     SDL_SetRenderDrawColor(renderer, 50, 60, 70, 255);
     for (int i = graphX; i <= graphX + graphW; i += scale) {
         SDL_RenderDrawLine(renderer, i, graphY, i, graphY + graphH);
@@ -143,12 +181,10 @@ void drawGraph(SDL_Renderer* renderer, double a, double b, double c, double root
         SDL_RenderDrawLine(renderer, graphX, i, graphX + graphW, i);
     }
     
-    // Main axes
     SDL_SetRenderDrawColor(renderer, 200, 200, 210, 255);
     SDL_RenderDrawLine(renderer, centerX, graphY, centerX, graphY + graphH);
     SDL_RenderDrawLine(renderer, graphX, centerY, graphX + graphW, centerY);
     
-    // Draw parabola
     SDL_SetRenderDrawColor(renderer, 100, 255, 100, 255);
     for (int px = graphX; px < graphX + graphW; px++) {
         double x = (px - centerX) / (double)scale;
@@ -161,7 +197,6 @@ void drawGraph(SDL_Renderer* renderer, double a, double b, double c, double root
         }
     }
     
-    // Draw root marker if exists
     if (hasRoot) {
         SDL_SetRenderDrawColor(renderer, 255, 80, 80, 255);
         int root_x = centerX + (int)(root * scale);
@@ -185,34 +220,49 @@ int main(int argc, char* argv[]) {
     
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     
+    // Load fonts
     TTF_Font* font = TTF_OpenFont("font.ttf", 18);
     TTF_Font* fontSmall = TTF_OpenFont("font.ttf", 14);
     TTF_Font* fontMedium = TTF_OpenFont("font.ttf", 16);
+    TTF_Font* fontLarge = TTF_OpenFont("font.ttf", 20);
     TTF_Font* fontTitle = TTF_OpenFont("font.ttf", 24);
     
-    if (!font || !fontSmall || !fontMedium || !fontTitle) {
+    if (!font || !fontSmall || !fontMedium || !fontLarge || !fontTitle) {
         printf("Error loading font: %s\n", TTF_GetError());
         return 1;
     }
     
-    // Input boxes
-    InputBox inputs[5];
-    const char* labels[] = {"a:", "b:", "c:", "x0:", "Method:"};
-    for (int i = 0; i < 5; i++) {
-        inputs[i].rect = (SDL_Rect){140, 220 + i * 60, 150, 35};
+    // Initialize input boxes
+    InputBox inputs[4];
+    const char* labels[] = {"a:", "b:", "c:", "x0:"};
+    for (int i = 0; i < 4; i++) {
+        inputs[i].rect = (SDL_Rect){140, 240 + i * 60, 150, 35};
         strcpy(inputs[i].label, labels[i]);
         strcpy(inputs[i].value, "");
         inputs[i].active = 0;
     }
-    strcpy(inputs[4].value, "1"); // Default method
     
-    // Compute button
-    Button computeBtn = {{140, 540, 150, 45}, "COMPUTE", 0, 0};
+    // Initialize method selection options
+    int selectedMethod = 1;
+    MethodOption methods[5];
+    const char* formulas[] = {
+        "g(x) = -(ax² + c) / b",
+        "g(x) = -c / (ax + b)",
+        "g(x) = √((-bx - c) / a)",
+        "g(x) = -√((-bx - c) / a)",
+        "g(x) = (x² - c/a) / (-b/a)"
+    };
+    for (int i = 0; i < 5; i++) {
+        methods[i].rect = (SDL_Rect){50, 500 + i * 28, 260, 26};
+        strcpy(methods[i].formula, formulas[i]);
+        methods[i].selected = (i == 0);
+        methods[i].hovered = 0;
+    }
     
-    // Clear button
-    Button clearBtn = {{140, 600, 150, 45}, "CLEAR", 0, 0};
+    Button computeBtn = {{50, 650, 120, 40}, "COMPUTE", 0, 0};
+    Button clearBtn = {{190, 650, 120, 40}, "CLEAR", 0, 0};
     
-    // Result variables
+    // State variables
     char resultText[500] = "";
     double finalRoot = 0;
     int hasValidRoot = 0;
@@ -225,19 +275,20 @@ int main(int argc, char* argv[]) {
     int tableScrollOffset = 0;
     SDL_Event e;
     
+    // Main event loop
     while (!quit) {
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 quit = 1;
             }
             
+            // Handle mouse clicks
             if (e.type == SDL_MOUSEBUTTONDOWN) {
                 int mx = e.button.x;
                 int my = e.button.y;
                 
-                // Check input boxes
                 activeInput = -1;
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < 4; i++) {
                     if (mx >= inputs[i].rect.x && mx <= inputs[i].rect.x + inputs[i].rect.w &&
                         my >= inputs[i].rect.y && my <= inputs[i].rect.y + inputs[i].rect.h) {
                         activeInput = i;
@@ -245,23 +296,29 @@ int main(int argc, char* argv[]) {
                     inputs[i].active = (i == activeInput);
                 }
                 
-                // Check compute button
+                for (int i = 0; i < 5; i++) {
+                    if (mx >= methods[i].rect.x && mx <= methods[i].rect.x + methods[i].rect.w &&
+                        my >= methods[i].rect.y && my <= methods[i].rect.y + methods[i].rect.h) {
+                        selectedMethod = i + 1;
+                        for (int j = 0; j < 5; j++) {
+                            methods[j].selected = (j == i);
+                        }
+                    }
+                }
+                
                 if (mx >= computeBtn.rect.x && mx <= computeBtn.rect.x + computeBtn.rect.w &&
                     my >= computeBtn.rect.y && my <= computeBtn.rect.y + computeBtn.rect.h) {
                     computeBtn.clicked = 1;
                     
-                    // Parse inputs
+                    // Parse input values
                     coefA = atof(inputs[0].value);
                     coefB = atof(inputs[1].value);
                     coefC = atof(inputs[2].value);
                     double x0 = atof(inputs[3].value);
-                    int method = atoi(inputs[4].value);
+                    int method = selectedMethod;
                     
-                    if (method < 1 || method > 5) {
-                        sprintf(resultText, "Error: Method must be 1-5");
-                        hasValidRoot = 0;
-                    } else {
-                        // Run Fixed Point Iteration
+                    {
+                        // Fixed Point Iteration Algorithm
                         double x_current = x0;
                         int iter = 0;
                         int diverged = 0;
@@ -271,7 +328,6 @@ int main(int argc, char* argv[]) {
                             double x_next = g(x_current, coefA, coefB, coefC, method);
                             double error = fabs(x_next - x_current);
                             
-                            // Store iteration data
                             iterations[iter].xn = x_current;
                             iterations[iter].xn1 = x_next;
                             iterations[iter].error = error;
@@ -289,6 +345,7 @@ int main(int argc, char* argv[]) {
                             }
                         }
                         
+                        // Validate result and format output
                         finalRoot = x_current;
                         double verification = fabs(f(finalRoot, coefA, coefB, coefC));
                         
@@ -304,13 +361,16 @@ int main(int argc, char* argv[]) {
                     }
                 }
                 
-                // Check clear button
+                // Clear button: Reset all inputs and state
                 if (mx >= clearBtn.rect.x && mx <= clearBtn.rect.x + clearBtn.rect.w &&
                     my >= clearBtn.rect.y && my <= clearBtn.rect.y + clearBtn.rect.h) {
                     for (int i = 0; i < 4; i++) {
                         strcpy(inputs[i].value, "");
                     }
-                    strcpy(inputs[4].value, "1");
+                    selectedMethod = 1;
+                    for (int i = 0; i < 5; i++) {
+                        methods[i].selected = (i == 0);
+                    }
                     strcpy(resultText, "");
                     hasValidRoot = 0;
                     totalIterations = 0;
@@ -333,8 +393,14 @@ int main(int argc, char* argv[]) {
                 
                 clearBtn.hovered = (mx >= clearBtn.rect.x && mx <= clearBtn.rect.x + clearBtn.rect.w &&
                                    my >= clearBtn.rect.y && my <= clearBtn.rect.y + clearBtn.rect.h);
+                
+                for (int i = 0; i < 5; i++) {
+                    methods[i].hovered = (mx >= methods[i].rect.x && mx <= methods[i].rect.x + methods[i].rect.w &&
+                                         my >= methods[i].rect.y && my <= methods[i].rect.y + methods[i].rect.h);
+                }
             }
             
+            // Handle text input for active input box
             if (e.type == SDL_TEXTINPUT && activeInput >= 0) {
                 // Allow numbers, decimal point, and minus sign
                 char c = e.text.text[0];
@@ -356,8 +422,8 @@ int main(int argc, char* argv[]) {
                 }
             }
             
+            // Handle mouse wheel for table scrolling
             if (e.type == SDL_MOUSEWHEEL) {
-                // Scroll the iteration table
                 if (totalIterations > 0) {
                     tableScrollOffset -= e.wheel.y * 2;
                     if (tableScrollOffset < 0) tableScrollOffset = 0;
@@ -370,52 +436,69 @@ int main(int argc, char* argv[]) {
             }
         }
         
-        // Rendering
+        // Clear screen
         SDL_SetRenderDrawColor(renderer, 240, 240, 245, 255);
         SDL_RenderClear(renderer);
         
-        // Header Information
+        // Render header information
         SDL_Color headerColor = {20, 20, 60, 255};
-        renderText(renderer, fontMedium, "MT211 - Numerical Method", 50, 15, headerColor);
-        renderText(renderer, fontSmall, "Semestral Project", 50, 40, headerColor);
+        renderText(renderer, fontTitle, "MT211 - Numerical Method", 50, 15, headerColor);
+        renderText(renderer, fontLarge, "Semestral Project", 50, 45, headerColor);
         
         SDL_Color submittedColor = {60, 60, 80, 255};
-        renderText(renderer, fontSmall, "Submitted By:", 50, 70, submittedColor);
-        renderText(renderer, fontSmall, "BSCPE 22001", 50, 90, submittedColor);
-        renderText(renderer, fontSmall, "Emmanuel Jr Porsona", 50, 110, submittedColor);
-        renderText(renderer, fontSmall, "Amit Jeed", 50, 130, submittedColor);
+        renderText(renderer, fontLarge, "Submitted By:", 50, 75, submittedColor);
+        renderText(renderer, fontLarge, "BSCPE 22001", 50, 100, submittedColor);
+        renderText(renderer, fontLarge, "Emmanuel Jr Porsona", 50, 125, submittedColor);
+        renderText(renderer, fontLarge, "Amit Jeed", 50, 150, submittedColor);
         
-        // Title
         SDL_Color titleColor = {40, 40, 100, 255};
-        renderText(renderer, fontTitle, "FIXED POINT ITERATION SOLVER", 550, 10, titleColor);
+        renderText(renderer, fontTitle, "FIXED POINT ITERATION METHOD", 550, 10, titleColor);
         
-        // Subtitle
         SDL_Color subtitleColor = {80, 80, 80, 255};
-        renderText(renderer, fontSmall, "Equation: ax^2 + bx + c = 0", 650, 50, subtitleColor);
+        renderText(renderer, fontLarge, "Quadratic Equation: ax² + bx + c = 0", 610, 50, subtitleColor);
         
-        // Input section
+        // Render input section
         SDL_Color sectionColor = {60, 60, 60, 255};
-        renderText(renderer, font, "INPUT", 120, 180, sectionColor);
+        renderText(renderer, font, "INPUT", 120, 200, sectionColor);
         
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 4; i++) {
             renderInputBox(renderer, font, &inputs[i]);
         }
         
-        // Method info
-        renderText(renderer, fontSmall, "Methods: 1-5", 140, 500, subtitleColor);
+        // Render method selection
+        renderText(renderer, font, "SELECT g(x):", 50, 475, sectionColor);
         
-        // Buttons
+        for (int i = 0; i < 5; i++) {
+            if (methods[i].selected) {
+                SDL_SetRenderDrawColor(renderer, 180, 220, 180, 255);
+            } else if (methods[i].hovered) {
+                SDL_SetRenderDrawColor(renderer, 230, 230, 250, 255);
+            } else {
+                SDL_SetRenderDrawColor(renderer, 245, 245, 245, 255);
+            }
+            SDL_RenderFillRect(renderer, &methods[i].rect);
+            
+            if (methods[i].selected) {
+                SDL_SetRenderDrawColor(renderer, 60, 140, 60, 255);
+            } else {
+                SDL_SetRenderDrawColor(renderer, 150, 150, 150, 255);
+            }
+            SDL_RenderDrawRect(renderer, &methods[i].rect);
+            
+            SDL_Color methodColor = methods[i].selected ? (SDL_Color){20, 80, 20, 255} : (SDL_Color){60, 60, 60, 255};
+            renderText(renderer, fontSmall, methods[i].formula, methods[i].rect.x + 5, methods[i].rect.y + 4, methodColor);
+        }
+        
         renderButton(renderer, font, &computeBtn);
         renderButton(renderer, font, &clearBtn);
         
-        // Status section
-        renderText(renderer, font, "STATUS", 70, 670, sectionColor);
+        renderText(renderer, font, "STATUS", 70, 720, sectionColor);
         
         if (strlen(resultText) > 0) {
             char resultCopy[500];
             strcpy(resultCopy, resultText);
             char* line = strtok(resultCopy, "\n");
-            int y = 700;
+            int y = 745;
             while (line) {
                 SDL_Color resultColor = hasValidRoot ? (SDL_Color){20, 120, 20, 255} : (SDL_Color){180, 20, 20, 255};
                 renderText(renderer, fontSmall, line, 80, y, resultColor);
@@ -424,11 +507,10 @@ int main(int argc, char* argv[]) {
             }
         }
         
-        // Iteration Table
+        // Render iteration table
         if (totalIterations > 0) {
             renderText(renderer, font, "ITERATION TABLE", 390, 110, sectionColor);
             
-            // Table header
             SDL_SetRenderDrawColor(renderer, 60, 80, 100, 255);
             SDL_Rect tableHeader = {390, 145, 460, 30};
             SDL_RenderFillRect(renderer, &tableHeader);
@@ -439,18 +521,15 @@ int main(int argc, char* argv[]) {
             renderText(renderer, fontSmall, "x_(n+1)", 600, 150, headerColor);
             renderText(renderer, fontSmall, "error", 760, 150, headerColor);
             
-            // Calculate visible rows
             int maxVisibleRows = 13;
             int startRow = tableScrollOffset;
             int endRow = startRow + maxVisibleRows;
             if (endRow > totalIterations) endRow = totalIterations;
             
-            // Table rows (scrollable)
             for (int i = startRow; i < endRow; i++) {
                 int displayIndex = i - startRow;
                 int y = 180 + displayIndex * 25;
                 
-                // Alternating row colors
                 if (i % 2 == 0) {
                     SDL_SetRenderDrawColor(renderer, 245, 245, 250, 255);
                 } else {
@@ -475,18 +554,15 @@ int main(int argc, char* argv[]) {
                 renderText(renderer, fontSmall, buffer, 740, y + 3, textColor);
             }
             
-            // Draw scrollbar if needed
             if (totalIterations > maxVisibleRows) {
                 int scrollbarX = 895;
                 int scrollbarY = 180;
                 int scrollbarHeight = maxVisibleRows * 25;
                 
-                // Scrollbar track
                 SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
                 SDL_Rect scrollbarTrack = {scrollbarX, scrollbarY, 10, scrollbarHeight};
                 SDL_RenderFillRect(renderer, &scrollbarTrack);
                 
-                // Scrollbar thumb
                 float thumbRatio = (float)maxVisibleRows / totalIterations;
                 int thumbHeight = (int)(scrollbarHeight * thumbRatio);
                 if (thumbHeight < 20) thumbHeight = 20;
@@ -500,7 +576,7 @@ int main(int argc, char* argv[]) {
             }
         }
         
-        // Conclusion section
+        // Render conclusion box with final results
         if (hasValidRoot) {
             int conclusionY = 550;
             renderText(renderer, font, "CONCLUSION", 430, conclusionY, sectionColor);
@@ -515,8 +591,7 @@ int main(int argc, char* argv[]) {
             SDL_Color conclusionColor = {10, 70, 10, 255};
             char buffer[200];
             
-            // Bold text effect by rendering multiple times with offset
-            sprintf(buffer, "Equation: %.1lfx^2 + (%.1lf)x + (%.1lf) = 0", coefA, coefB, coefC);
+            formatEquation(buffer, (int)coefA, (int)coefB, (int)coefC);
             renderText(renderer, font, buffer, 440, conclusionY + 45, conclusionColor);
             renderText(renderer, font, buffer, 441, conclusionY + 45, conclusionColor);
             
@@ -529,7 +604,6 @@ int main(int argc, char* argv[]) {
             renderText(renderer, font, buffer, 441, conclusionY + 95, conclusionColor);
         }
         
-        // Graph section
         renderText(renderer, font, "GRAPH", 950, 110, sectionColor);
         drawGraph(renderer, coefA, coefB, coefC, finalRoot, hasValidRoot);
         
@@ -540,6 +614,7 @@ int main(int argc, char* argv[]) {
     TTF_CloseFont(font);
     TTF_CloseFont(fontSmall);
     TTF_CloseFont(fontMedium);
+    TTF_CloseFont(fontLarge);
     TTF_CloseFont(fontTitle);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
