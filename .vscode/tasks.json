@@ -13,7 +13,7 @@
 		{
 			"label": "Build Fixed Point Iteration",
 			"type": "shell",
-			"command": "gcc Elimination_Linear_Equation.c -I\"C:\\SDL2\\x86_64-w64-mingw32\\include\\SDL2\" -L\"C:\\SDL2\\x86_64-w64-mingw32\\lib\" -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -o elimination_linear_equation.exe",
+			"command": "gcc secant_method_exponential.c -I\"C:\\SDL2\\x86_64-w64-mingw32\\include\\SDL2\" -L\"C:\\SDL2\\x86_64-w64-mingw32\\lib\" -lmingw32 -lSDL2main -lSDL2 -lSDL2_ttf -o secant_method_exponential.exe",
 			"problemMatcher": [
 				"$gcc"
 			],
