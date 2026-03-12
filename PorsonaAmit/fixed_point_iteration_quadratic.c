@@ -172,7 +172,7 @@ static void drawMountains(SDL_Renderer* rr, int baseY, int w) {
             }
         }
     }
-    /* front range — darker pink/mauve */
+    /* front range — darker pink/mauve (uses vertical lines instead of per-pixel) */
     {
         int pts[][2] = {{0,baseY},{100,baseY-80},{250,baseY-155},{400,baseY-100},
             {550,baseY-190},{700,baseY-120},{850,baseY-170},{1000,baseY-130},
@@ -190,14 +190,18 @@ static void drawMountains(SDL_Renderer* rr, int baseY, int w) {
                 }
             }
             if (top < baseY) {
-                /* slight gradient per height */
-                for (int py = top; py < baseY; py++) {
-                    float t = (float)(py - top) / (baseY - top);
+                /* draw a few gradient bands instead of per-pixel */
+                int height = baseY - top;
+                int bands = 5;
+                for (int b = 0; b < bands; b++) {
+                    int y1 = top + height * b / bands;
+                    int y2 = top + height * (b + 1) / bands;
+                    float t = (float)(b + 0.5f) / bands;
                     int rv = (int)(195 + t*30);
                     int gv = (int)(120 + t*50);
                     int bv = (int)(155 + t*25);
                     SDL_SetRenderDrawColor(rr,rv,gv,bv,255);
-                    SDL_RenderDrawPoint(rr,col,py);
+                    SDL_RenderDrawLine(rr,col,y1,col,y2);
                 }
             }
         }
@@ -840,17 +844,23 @@ int main(int argc, char* argv[]) {
             }
 
             /* === Dancing women silhouettes === */
+            /* Efficient filled-circle: uses horizontal lines instead of per-pixel */
             #define FC(cx,cy,cr,R,G,B,A) do { \
-                for(int _i=-(cr);_i<=(cr);_i++) for(int _j=-(cr);_j<=(cr);_j++) \
-                    if(_i*_i+_j*_j<=(cr)*(cr)){SDL_SetRenderDrawColor(renderer,R,G,B,A);SDL_RenderDrawPoint(renderer,(cx)+_i,(cy)+_j);} \
+                SDL_SetRenderDrawColor(renderer,R,G,B,A); \
+                for(int _j=-(cr);_j<=(cr);_j++) { \
+                    int _hw=(int)sqrt((double)((cr)*(cr)-_j*_j)); \
+                    SDL_RenderDrawLine(renderer,(cx)-_hw,(cy)+_j,(cx)+_hw,(cy)+_j); \
+                } \
             } while(0)
-            /* draw a thick filled segment between two points */
+            /* Efficient thick line: draws parallel offset lines instead of per-pixel circles */
             #define THICKLINE(x1,y1,x2,y2,thk,R,G,B,A) do { \
-                int _dx=(x2)-(x1), _dy=(y2)-(y1); \
-                int _steps=(int)sqrt((double)(_dx*_dx+_dy*_dy))+1; \
-                for(int _s=0;_s<=_steps;_s++) { \
-                    int _px=(x1)+_dx*_s/_steps, _py=(y1)+_dy*_s/_steps; \
-                    FC(_px,_py,thk,R,G,B,A); \
+                SDL_SetRenderDrawColor(renderer,R,G,B,A); \
+                for(int _t=-(thk);_t<=(thk);_t++) { \
+                    int _dx=(x2)-(x1), _dy=(y2)-(y1); \
+                    double _len=sqrt((double)(_dx*_dx+_dy*_dy)); \
+                    if(_len<1)_len=1; \
+                    int _ox=(int)(-_dy*(double)_t/_len), _oy=(int)(_dx*(double)_t/_len); \
+                    SDL_RenderDrawLine(renderer,(x1)+_ox,(y1)+_oy,(x2)+_ox,(y2)+_oy); \
                 } \
             } while(0)
 
