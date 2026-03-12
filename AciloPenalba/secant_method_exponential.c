@@ -89,29 +89,29 @@ void drawRoundedPanel(SDL_Renderer* renderer, int x, int y, int w, int h, SDL_Co
 void renderInputBox(SDL_Renderer* renderer, TTF_Font* font, InputBox* box) {
     // Box fill
     if (box->active) {
-        SDL_SetRenderDrawColor(renderer, 255, 240, 240, 255);
+        SDL_SetRenderDrawColor(renderer, 255, 232, 248, 255);
     } else {
-        SDL_SetRenderDrawColor(renderer, 255, 250, 250, 255);
+        SDL_SetRenderDrawColor(renderer, 255, 245, 253, 255);
     }
     SDL_RenderFillRect(renderer, &box->rect);
     
     // Box border
     if (box->active) {
-        SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255);
+        SDL_SetRenderDrawColor(renderer, 205, 25, 95, 255);
         SDL_RenderDrawRect(renderer, &box->rect);
         SDL_Rect inner = {box->rect.x + 1, box->rect.y + 1, box->rect.w - 2, box->rect.h - 2};
         SDL_RenderDrawRect(renderer, &inner);
     } else {
-        SDL_SetRenderDrawColor(renderer, 180, 100, 100, 255);
+        SDL_SetRenderDrawColor(renderer, 190, 90, 145, 255);
         SDL_RenderDrawRect(renderer, &box->rect);
     }
     
     // Label
-    SDL_Color labelColor = {120, 30, 30, 255};
+    SDL_Color labelColor = {130, 15, 65, 255};
     renderTextBold(renderer, font, box->label, box->rect.x, box->rect.y - 25, labelColor);
     
     // Value text
-    SDL_Color textColor = {80, 20, 20, 255};
+    SDL_Color textColor = {90, 10, 45, 255};
     if (strlen(box->value) > 0) {
         renderText(renderer, font, box->value, box->rect.x + 10, box->rect.y + 8, textColor);
     }
@@ -122,15 +122,15 @@ void renderButton(SDL_Renderer* renderer, TTF_Font* font, Button* btn) {
     SDL_Color bgColor, textColor = {255, 255, 255, 255};
     
     if (btn->clicked) {
-        bgColor = (SDL_Color){150, 30, 30, 255};
+        bgColor = (SDL_Color){145, 18, 68, 255};
     } else if (btn->hovered) {
-        bgColor = (SDL_Color){220, 60, 60, 255};
+        bgColor = (SDL_Color){225, 55, 118, 255};
     } else {
-        bgColor = (SDL_Color){190, 50, 50, 255};
+        bgColor = (SDL_Color){195, 35, 93, 255};
     }
     
     // Shadow effect
-    SDL_SetRenderDrawColor(renderer, 100, 20, 20, 255);
+    SDL_SetRenderDrawColor(renderer, 90, 10, 45, 255);
     SDL_Rect shadow = {btn->rect.x + 3, btn->rect.y + 3, btn->rect.w, btn->rect.h};
     SDL_RenderFillRect(renderer, &shadow);
     
@@ -138,7 +138,7 @@ void renderButton(SDL_Renderer* renderer, TTF_Font* font, Button* btn) {
     SDL_SetRenderDrawColor(renderer, bgColor.r, bgColor.g, bgColor.b, bgColor.a);
     SDL_RenderFillRect(renderer, &btn->rect);
     
-    SDL_SetRenderDrawColor(renderer, 120, 20, 20, 255);
+    SDL_SetRenderDrawColor(renderer, 110, 14, 54, 255);
     SDL_RenderDrawRect(renderer, &btn->rect);
     
     // Text
@@ -168,13 +168,13 @@ void drawGraph(SDL_Renderer* renderer, TTF_Font* fontSmall, double a, double b,
     int graphH = 360;
     
     // Background
-    SDL_SetRenderDrawColor(renderer, 255, 252, 248, 255);
+    SDL_SetRenderDrawColor(renderer, 255, 240, 250, 255);
     SDL_Rect graphRect = {graphX, graphY, graphW, graphH};
     SDL_RenderFillRect(renderer, &graphRect);
     
     // Border
     drawPanel(renderer, graphX, graphY, graphW, graphH, 
-              (SDL_Color){255, 252, 248, 255}, (SDL_Color){180, 80, 80, 255}, 2);
+              (SDL_Color){255, 240, 250, 255}, (SDL_Color){200, 55, 110, 255}, 2);
     
     // Determine range
     double x_min = hasRoot ? root - 3 : -2;
@@ -200,7 +200,7 @@ void drawGraph(SDL_Renderer* renderer, TTF_Font* fontSmall, double a, double b,
     int originY = graphY + graphH - (int)((-y_min) * scaleY);
     
     // Grid
-    SDL_SetRenderDrawColor(renderer, 245, 230, 230, 255);
+    SDL_SetRenderDrawColor(renderer, 245, 215, 238, 255);
     for (int gx = graphX; gx < graphX + graphW; gx += 40) {
         SDL_RenderDrawLine(renderer, gx, graphY, gx, graphY + graphH);
     }
@@ -209,14 +209,14 @@ void drawGraph(SDL_Renderer* renderer, TTF_Font* fontSmall, double a, double b,
     }
     
     // Axes
-    SDL_SetRenderDrawColor(renderer, 100, 40, 40, 255);
+    SDL_SetRenderDrawColor(renderer, 110, 20, 60, 255);
     if (originY >= graphY && originY <= graphY + graphH)
         SDL_RenderDrawLine(renderer, graphX, originY, graphX + graphW, originY);
     if (originX >= graphX && originX <= graphX + graphW)
         SDL_RenderDrawLine(renderer, originX, graphY, originX, graphY + graphH);
     
     // Draw function curve
-    SDL_SetRenderDrawColor(renderer, 200, 50, 50, 255);
+    SDL_SetRenderDrawColor(renderer, 200, 35, 95, 255);
     for (int px = 0; px < graphW - 1; px++) {
         double x1 = x_min + (px / (double)graphW) * (x_max - x_min);
         double x2 = x_min + ((px + 1) / (double)graphW) * (x_max - x_min);
@@ -235,7 +235,7 @@ void drawGraph(SDL_Renderer* renderer, TTF_Font* fontSmall, double a, double b,
     
     // Draw secant lines for iterations
     if (iterationCount > 0 && hasRoot) {
-        SDL_SetRenderDrawColor(renderer, 255, 150, 100, 150);
+        SDL_SetRenderDrawColor(renderer, 255, 110, 175, 150);
         for (int i = 0; i < iterationCount && i < 8; i++) {
             double x1 = iterations[i].x_prev;
             double x2 = iterations[i].x_curr;
@@ -266,10 +266,11 @@ void drawGraph(SDL_Renderer* renderer, TTF_Font* fontSmall, double a, double b,
                 int py = graphY + graphH - (int)((y - y_min) * scaleY);
                 
                 if (px >= graphX && px < graphX + graphW && py >= graphY && py < graphY + graphH) {
-                    // Gradient from orange to red
-                    int r = 255 - (i * 15);
-                    int g = 150 - (i * 12);
-                    SDL_SetRenderDrawColor(renderer, r, g, 0, 255);
+                    // Gradient from hot pink to deep magenta
+                    int ri = 235 - (i * 8 > 70 ? 70 : i * 8);
+                    int gi = (50 - i * 6 < 0 ? 0 : 50 - i * 6);
+                    int bi = 110 + (i * 12 > 90 ? 90 : i * 12);
+                    SDL_SetRenderDrawColor(renderer, ri, gi, bi, 255);
                     
                     for (int dx = -5; dx <= 5; dx++) {
                         for (int dy = -5; dy <= 5; dy++) {
@@ -293,8 +294,8 @@ void drawGraph(SDL_Renderer* renderer, TTF_Font* fontSmall, double a, double b,
             int py = graphY + graphH - (int)((ry - y_min) * scaleY);
             
             if (px >= graphX && px < graphX + graphW && py >= graphY && py < graphY + graphH) {
-                // Glow effect
-                SDL_SetRenderDrawColor(renderer, 255, 200, 150, 255);
+                // Glow effect (deep pink glow)
+                SDL_SetRenderDrawColor(renderer, 255, 175, 220, 255);
                 for (int r = 10; r > 6; r--) {
                     for (int angle = 0; angle < 360; angle += 10) {
                         int dx = (int)(r * cos(angle * M_PI / 180));
@@ -304,7 +305,7 @@ void drawGraph(SDL_Renderer* renderer, TTF_Font* fontSmall, double a, double b,
                 }
                 
                 // Center dot
-                SDL_SetRenderDrawColor(renderer, 220, 20, 60, 255);
+                SDL_SetRenderDrawColor(renderer, 210, 15, 82, 255);
                 for (int dx = -6; dx <= 6; dx++) {
                     for (int dy = -6; dy <= 6; dy++) {
                         if (dx*dx + dy*dy <= 36) {
@@ -317,9 +318,9 @@ void drawGraph(SDL_Renderer* renderer, TTF_Font* fontSmall, double a, double b,
     }
     
     // Labels
-    renderText(renderer, fontSmall, "y", originX + 8, graphY + 5, (SDL_Color){100, 40, 40, 255});
-    renderText(renderer, fontSmall, "x", graphX + graphW - 15, originY + 5, (SDL_Color){100, 40, 40, 255});
-    renderTextBold(renderer, fontSmall, "f(x) = e^x - ax - b", graphX + 15, graphY + 15, (SDL_Color){200, 50, 50, 255});
+    renderText(renderer, fontSmall, "y", originX + 8, graphY + 5, (SDL_Color){110, 20, 60, 255});
+    renderText(renderer, fontSmall, "x", graphX + graphW - 15, originY + 5, (SDL_Color){110, 20, 60, 255});
+    renderTextBold(renderer, fontSmall, "f(x) = e^x - ax - b", graphX + 15, graphY + 15, (SDL_Color){195, 35, 95, 255});
 }
 
 int main(int argc, char* argv[]) {
@@ -514,27 +515,27 @@ int main(int argc, char* argv[]) {
         }
         
         // ==================== RENDER ====================
-        SDL_Color bgMain = {255, 248, 245, 255};
+        SDL_Color bgMain = {255, 230, 244, 255};
         SDL_SetRenderDrawColor(renderer, bgMain.r, bgMain.g, bgMain.b, bgMain.a);
         SDL_RenderClear(renderer);
         
         // ---- TOP BANNER ----
-        SDL_SetRenderDrawColor(renderer, 190, 50, 50, 255);
+        SDL_SetRenderDrawColor(renderer, 170, 15, 65, 255);
         SDL_Rect banner = {0, 0, WINDOW_WIDTH, 80};
         SDL_RenderFillRect(renderer, &banner);
         
         // Gradient effect
         for (int i = 0; i < 5; i++) {
-            SDL_SetRenderDrawColor(renderer, 220 - i * 10, 60 - i * 5, 60 - i * 5, 255);
+            SDL_SetRenderDrawColor(renderer, 200 - i * 8, 20 - i * 2, 70 + i * 2, 255);
             SDL_RenderDrawLine(renderer, 0, i, WINDOW_WIDTH, i);
         }
         for (int i = 0; i < 5; i++) {
-            SDL_SetRenderDrawColor(renderer, 160 + i * 6, 40 + i * 2, 40 + i * 2, 255);
+            SDL_SetRenderDrawColor(renderer, 145 + i * 5, 12 + i, 58 + i * 2, 255);
             SDL_RenderDrawLine(renderer, 0, 75 + i, WINDOW_WIDTH, 75 + i);
         }
         
         SDL_Color white = {255, 255, 255, 255};
-        SDL_Color lightPink = {255, 220, 220, 255};
+        SDL_Color lightPink = {255, 200, 230, 255};
         
         renderTextBold(renderer, fontTitle, "SECANT METHOD", 50, 15, white);
         renderText(renderer, fontLarge, "for Exponential Equations", 50, 48, lightPink);
@@ -544,21 +545,21 @@ int main(int argc, char* argv[]) {
         renderText(renderer, fontSmall, "Jayboy Acilo  |  Billy Jay Penalba", 1028, 60, lightPink);
         
         // ---- LEFT PANEL: Input & Graph ----
-        drawPanel(renderer, 25, 95, 700, 830, (SDL_Color){255, 252, 250, 255}, 
-                  (SDL_Color){180, 80, 80, 255}, 2);
+        drawPanel(renderer, 25, 95, 700, 830, (SDL_Color){255, 240, 250, 255}, 
+                  (SDL_Color){200, 55, 110, 255}, 2);
         
-        SDL_Color sectionColor = {140, 30, 30, 255};
-        SDL_Color hintColor = {150, 90, 90, 255};
+        SDL_Color sectionColor = {145, 15, 65, 255};
+        SDL_Color hintColor = {175, 75, 130, 255};
         
         // Method explanation box
-        drawPanel(renderer, 40, 110, 670, 105, (SDL_Color){255, 245, 245, 255}, 
-                  (SDL_Color){220, 120, 120, 255}, 1);
+        drawPanel(renderer, 40, 110, 670, 105, (SDL_Color){255, 235, 248, 255}, 
+                  (SDL_Color){220, 95, 150, 255}, 1);
         
         renderTextBold(renderer, fontMedium, "HOW IT WORKS:", 55, 118, sectionColor);
         renderText(renderer, fontSmall, "The Secant Method finds roots using two initial points without", 55, 143, hintColor);
         renderText(renderer, fontSmall, "calculating derivatives. It draws secant lines between points to", 55, 163, hintColor);
         renderText(renderer, fontSmall, "converge to the root. Formula:", 55, 183, hintColor);
-        renderTextBold(renderer, font, "x(n+1) = x(n) - f(x(n)) * [x(n) - x(n-1)] / [f(x(n)) - f(x(n-1))]", 255, 183, (SDL_Color){180, 40, 40, 255});
+        renderTextBold(renderer, font, "x(n+1) = x(n) - f(x(n)) * [x(n) - x(n-1)] / [f(x(n)) - f(x(n-1))]", 255, 183, (SDL_Color){185, 25, 85, 255});
         
       
         
@@ -584,7 +585,7 @@ int main(int argc, char* argv[]) {
         } else {
             strcpy(eqPreview, "Equation: e^x - a x - b = 0");
         }
-        renderTextBold(renderer, fontMedium, eqPreview, 60, 380, (SDL_Color){140, 30, 30, 255});
+        renderTextBold(renderer, fontMedium, eqPreview, 60, 380, (SDL_Color){145, 15, 65, 255});
 
         // Hint text
         renderText(renderer, fontTiny, "Note: x0 and x1 should be close to the expected root", 140, 410, hintColor);
@@ -594,18 +595,18 @@ int main(int argc, char* argv[]) {
         renderButton(renderer, font, &clearBtn);
         
         // Status box
-        drawPanel(renderer, 40, 515, 670, 10, (SDL_Color){255, 245, 240, 255}, 
-                  (SDL_Color){200, 100, 100, 255}, 1);
+        drawPanel(renderer, 40, 515, 670, 10, (SDL_Color){255, 235, 250, 255}, 
+                  (SDL_Color){210, 80, 140, 255}, 1);
         
         if (statusSuccess) {
             SDL_SetRenderDrawColor(renderer, 220, 255, 220, 255);
         } else {
-            SDL_SetRenderDrawColor(renderer, 255, 240, 240, 255);
+            SDL_SetRenderDrawColor(renderer, 255, 230, 247, 255);
         }
         SDL_Rect statusBg = {40, 515, 670, 10};
         SDL_RenderFillRect(renderer, &statusBg);
         
-        SDL_Color statusColor = statusSuccess ? (SDL_Color){0, 120, 0, 255} : (SDL_Color){180, 40, 40, 255};
+        SDL_Color statusColor = statusSuccess ? (SDL_Color){0, 120, 0, 255} : (SDL_Color){185, 20, 80, 255};
         char statusCopy[300];
         strcpy(statusCopy, statusMsg);
         char* line = strtok(statusCopy, "\n");
@@ -620,8 +621,8 @@ int main(int argc, char* argv[]) {
         drawGraph(renderer, fontSmall, a_val, b_val, root, hasResult);
         
         // ---- RIGHT PANEL: Results ----
-        drawPanel(renderer, 740, 95, 735, 830, (SDL_Color){255, 252, 250, 255}, 
-                  (SDL_Color){180, 80, 80, 255}, 2);
+        drawPanel(renderer, 740, 95, 735, 830, (SDL_Color){255, 240, 250, 255}, 
+                  (SDL_Color){200, 55, 110, 255}, 2);
         
         renderTextBold(renderer, fontLarge, "ITERATION TABLE", 1000, 110, sectionColor);
         
@@ -632,8 +633,8 @@ int main(int argc, char* argv[]) {
             int tableX = 755;
             int tableY = 165;
             
-            drawPanel(renderer, tableX, tableY, 705, 30, (SDL_Color){200, 70, 70, 255}, 
-                      (SDL_Color){150, 40, 40, 255}, 1);
+            drawPanel(renderer, tableX, tableY, 705, 30, (SDL_Color){190, 30, 92, 255}, 
+                      (SDL_Color){145, 18, 68, 255}, 1);
             
             SDL_Color headerColor = {255, 255, 255, 255};
             renderTextBold(renderer, fontSmall, "n", tableX + 10, tableY + 8, headerColor);
@@ -650,12 +651,12 @@ int main(int argc, char* argv[]) {
             int startIdx = scrollOffset / 22;
             
             for (int i = startIdx; i < iterationCount && i < startIdx + maxRows; i++) {
-                SDL_Color rowBg = (i % 2 == 0) ? (SDL_Color){255, 250, 250, 255} : (SDL_Color){255, 245, 245, 255};
+                SDL_Color rowBg = (i % 2 == 0) ? (SDL_Color){255, 244, 252, 255} : (SDL_Color){255, 235, 248, 255};
                 SDL_SetRenderDrawColor(renderer, rowBg.r, rowBg.g, rowBg.b, rowBg.a);
                 SDL_Rect rowRect = {tableX, rowY, 705, 22};
                 SDL_RenderFillRect(renderer, &rowRect);
                 
-                SDL_Color textColor = {80, 30, 30, 255};
+                SDL_Color textColor = {90, 15, 50, 255};
                 char buf[50];
                 
                 sprintf(buf, "%d", iterations[i].n);

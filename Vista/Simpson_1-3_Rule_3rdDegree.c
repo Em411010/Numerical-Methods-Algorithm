@@ -178,7 +178,7 @@ static void drawSmallFlower(SDL_Renderer* rr, int cx, int cy, int r, SDL_Color p
 static void drawGraph(SDL_Renderer* rr, TTF_Font* fSmall,
                       double A, double B, double C, double D,
                       double a, double b, int n, int hasSol) {
-    int GX = 1100, GY = 195, GW = 470, GH = 415;
+    int GX = 1100, GY = 207, GW = 470, GH = 415;
 
     double xMin = a - 1.0, xMax = b + 1.0;
     double span = xMax - xMin;
@@ -323,10 +323,10 @@ int main(int argc, char* argv[]) {
         inputs[i].rect = (SDL_Rect){0,0,80,36};
     }
 
-    Button btnCompute = {{55, 530, 175, 46}, "COMPUTE", 0, 0};
-    Button btnClear   = {{255,530, 175, 46}, "CLEAR",   0, 0};
+    Button btnCompute = {{55, 542, 175, 46}, "COMPUTE", 0, 0};
+    Button btnClear   = {{255,542, 175, 46}, "CLEAR",   0, 0};
     Button btnBack    = {{30, 30, 160, 50},  "< BACK",  0, 0};
-    Button btnBackSolver = {{1390, 88, 120, 36}, "< MENU", 0, 0};
+    Button btnBackSolver = {{1390, 94, 120, 36}, "< MENU", 0, 0};
 
     int    hasSol = 0, hasError = 0, activeInput = -1, quit = 0;
     double simpsonResult = 0, exactResult = 0;
@@ -792,15 +792,15 @@ int main(int argc, char* argv[]) {
 
             renderButton(renderer, fSmall, &btnBackSolver);
 
-            drawPanel(renderer, 14, 88, 495, 835, panelBg, panBdr);
-            renderBold(renderer, fLarge, "INPUT COEFFICIENTS", 85, 100, secCol);
+            drawPanel(renderer, 14, 100, 495, 823, panelBg, panBdr);
+            renderBold(renderer, fLarge, "INPUT COEFFICIENTS", 85, 112, secCol);
 
-            drawSmallFlower(renderer, 470, 100, 7, (SDL_Color){255,190,215,120}, (SDL_Color){255,220,100,255});
+            drawSmallFlower(renderer, 470, 112, 7, (SDL_Color){255,190,215,120}, (SDL_Color){255,220,100,255});
 
-            drawPanel(renderer, 30, 126, 462, 58, eqBg, eqBdr);
-            renderText(renderer, fSmall, "Function:", 44, 132, hintCol);
+            drawPanel(renderer, 30, 138, 462, 58, eqBg, eqBdr);
+            renderText(renderer, fSmall, "Function:", 44, 144, hintCol);
             {
-                int tx = 44, ty = 148;
+                int tx = 44, ty = 160;
                 SDL_Color ec = {180, 50, 100, 255};
                 renderBold(renderer, fMed, "f(x) = ", tx, ty, ec);
                 tx += textW(fMed, "f(x) = ");
@@ -810,58 +810,58 @@ int main(int argc, char* argv[]) {
                 renderText(renderer, fMed, " + Cx + D", tx, ty, ec);
             }
 
-            drawPanel(renderer, 30, 195, 462, 90, eqBg, eqBdr);
-            renderBold(renderer, fNorm, "POLYNOMIAL COEFFICIENTS", 140, 200, secCol);
+            drawPanel(renderer, 30, 207, 462, 90, eqBg, eqBdr);
+            renderBold(renderer, fNorm, "POLYNOMIAL COEFFICIENTS", 140, 212, secCol);
             int boxW = 80, boxH = 36;
             for (int i = 0; i < 4; i++)
-                inputs[i].rect = (SDL_Rect){40 + i*112, 240, boxW, boxH};
+                inputs[i].rect = (SDL_Rect){40 + i*112, 252, boxW, boxH};
             for (int i = 0; i < 4; i++) renderInputBox(renderer, fSmall, &inputs[i]);
 
-            drawPanel(renderer, 30, 300, 462, 90, eqBg, eqBdr);
-            renderBold(renderer, fNorm, "INTEGRATION BOUNDS & INTERVALS", 110, 305, secCol);
-            inputs[4].rect = (SDL_Rect){40,  345, 120, boxH};
-            inputs[5].rect = (SDL_Rect){185, 345, 120, boxH};
-            inputs[6].rect = (SDL_Rect){330, 345, 120, boxH};
+            drawPanel(renderer, 30, 312, 462, 90, eqBg, eqBdr);
+            renderBold(renderer, fNorm, "INTEGRATION BOUNDS & INTERVALS", 110, 317, secCol);
+            inputs[4].rect = (SDL_Rect){40,  357, 120, boxH};
+            inputs[5].rect = (SDL_Rect){185, 357, 120, boxH};
+            inputs[6].rect = (SDL_Rect){330, 357, 120, boxH};
             for (int i = 4; i < 7; i++) renderInputBox(renderer, fSmall, &inputs[i]);
 
-            drawPanel(renderer, 30, 405, 462, 60, eqBg, eqBdr);
-            renderBold(renderer, fNorm, "EQUATION PREVIEW", 158, 409, secCol);
+            drawPanel(renderer, 30, 417, 462, 60, eqBg, eqBdr);
+            renderBold(renderer, fNorm, "EQUATION PREVIEW", 158, 421, secCol);
             {
                 double pA=atof(inputs[0].value), pB=atof(inputs[1].value);
                 double pC=atof(inputs[2].value), pD=atof(inputs[3].value);
                 char prev[120];
                 sprintf(prev, "f(x) = %.2gx^3 + %.2gx^2 + %.2gx + %.2g", pA, pB, pC, pD);
-                renderBold(renderer, fNorm, prev, 44, 435, (SDL_Color){180,50,100,255});
+                renderBold(renderer, fNorm, prev, 44, 447, (SDL_Color){180,50,100,255});
             }
 
             renderButton(renderer, fNorm, &btnCompute);
             renderButton(renderer, fNorm, &btnClear);
 
             if (hasError && strlen(errorMsg) > 0) {
-                drawPanel(renderer, 30, 590, 462, 36,
+                drawPanel(renderer, 30, 602, 462, 36,
                           (SDL_Color){255,230,235,255}, (SDL_Color){210,80,100,255});
-                renderText(renderer, fSmall, errorMsg, 42, 598, (SDL_Color){180,30,50,255});
+                renderText(renderer, fSmall, errorMsg, 42, 610, (SDL_Color){180,30,50,255});
             }
 
             if (hasSol) {
-                drawPanel(renderer, 30, 640, 462, 92,
+                drawPanel(renderer, 30, 652, 462, 92,
                           (SDL_Color){255,230,240,255}, (SDL_Color){210,120,160,255});
-                renderBold(renderer, fMed, "RESULT", 210, 646, (SDL_Color){140,30,75,255});
+                renderBold(renderer, fMed, "RESULT", 210, 658, (SDL_Color){140,30,75,255});
                 char buf[120];
                 sprintf(buf, "Approx: %.6f", simpsonResult);
-                renderBold(renderer, fLarge, buf, 48, 672, (SDL_Color){180,50,100,255});
+                renderBold(renderer, fLarge, buf, 48, 684, (SDL_Color){180,50,100,255});
                 sprintf(buf, "Exact:  %.6f   |  Error: %.2e",
                         exactResult, fabs(simpsonResult - exactResult));
-                renderText(renderer, fSmall, buf, 48, 700, (SDL_Color){160,70,110,255});
+                renderText(renderer, fSmall, buf, 48, 712, (SDL_Color){160,70,110,255});
 
-                drawSmallFlower(renderer, 460, 650, 6, (SDL_Color){255,190,210,140}, (SDL_Color){255,220,100,255});
+                drawSmallFlower(renderer, 460, 662, 6, (SDL_Color){255,190,210,140}, (SDL_Color){255,220,100,255});
             }
 
-            drawPanel(renderer, 520, 88, 555, 835, panelBg, panBdr);
-            renderBold(renderer, fLarge, "SOLUTION STEPS", 688, 100, secCol);
+            drawPanel(renderer, 520, 100, 555, 823, panelBg, panBdr);
+            renderBold(renderer, fLarge, "SOLUTION STEPS", 688, 112, secCol);
 
             if (hasSol) {
-                int sy = 125;
+                int sy = 137;
                 char sbuf[256];
 
                 drawPanel(renderer, 534, sy, 526, 55, (SDL_Color){255,240,248,255}, eqBdr);
@@ -996,18 +996,18 @@ int main(int argc, char* argv[]) {
 
             } else {
                 renderText(renderer, fNorm, "Steps will appear here after pressing COMPUTE.",
-                           590, 430, hintCol);
-                drawSmallFlower(renderer, 780, 500, 10, (SDL_Color){255,190,215,100}, (SDL_Color){255,220,100,255});
+                           590, 442, hintCol);
+                drawSmallFlower(renderer, 780, 512, 10, (SDL_Color){255,190,215,100}, (SDL_Color){255,220,100,255});
             }
 
-            drawPanel(renderer, 1085, 88, 500, 835, panelBg, panBdr);
-            renderBold(renderer, fLarge, "GRAPH", 1295, 100, secCol);
+            drawPanel(renderer, 1085, 100, 500, 823, panelBg, panBdr);
+            renderBold(renderer, fLarge, "GRAPH", 1295, 112, secCol);
 
-            drawSmallFlower(renderer, 1110, 100, 6, (SDL_Color){255,190,210,120}, (SDL_Color){255,220,100,255});
+            drawSmallFlower(renderer, 1110, 112, 6, (SDL_Color){255,190,210,120}, (SDL_Color){255,220,100,255});
 
             drawGraph(renderer, fSmall, sA, sB, sC, sD, sa, sb, sn, hasSol);
 
-            int LY = 635;
+            int LY = 647;
             drawPanel(renderer,1098,LY,462,88,eqBg,eqBdr);
             renderBold(renderer,fNorm,"LEGEND",1295,LY+5,secCol);
             SDL_SetRenderDrawColor(renderer,180,50,100,255);

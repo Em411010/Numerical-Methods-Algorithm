@@ -131,13 +131,15 @@ static void drawPanel(SDL_Renderer* r, int x, int y, int w, int h,
 }
 
 static void renderInputBox(SDL_Renderer* rr, TTF_Font* f, InputBox* box) {
-    SDL_Color lc = {0, 70, 70, 255};
+    SDL_Color lc = {140, 30, 70, 255};
     renderBold(rr, f, box->label, box->rect.x, box->rect.y - 20, lc);
-    SDL_SetRenderDrawColor(rr, box->active ? 225 : 245, 255, 255, 255);
+    SDL_SetRenderDrawColor(rr, box->active ? 255 : 255,
+                               box->active ? 230 : 240,
+                               box->active ? 240 : 248, 255);
     SDL_RenderFillRect(rr, &box->rect);
-    SDL_SetRenderDrawColor(rr, box->active ? 0 : 100,
-                                box->active ? 140 : 180,
-                                box->active ? 140 : 180, 255);
+    SDL_SetRenderDrawColor(rr, box->active ? 180 : 210,
+                                box->active ? 40  : 140,
+                                box->active ? 80  : 170, 255);
     SDL_RenderDrawRect(rr, &box->rect);
     if (box->active) {
         SDL_Rect inn = {box->rect.x+1, box->rect.y+1, box->rect.w-2, box->rect.h-2};
@@ -146,19 +148,19 @@ static void renderInputBox(SDL_Renderer* rr, TTF_Font* f, InputBox* box) {
     if (strlen(box->value) > 0)
         renderText(rr, f, box->value,
                    box->rect.x + 8, box->rect.y + 7,
-                   (SDL_Color){0, 55, 55, 255});
+                   (SDL_Color){100, 20, 50, 255});
 }
 
 static void renderButton(SDL_Renderer* rr, TTF_Font* f, Button* btn) {
-    SDL_Color bg = btn->clicked  ? (SDL_Color){0,  75,  75, 255}
-                 : btn->hovered  ? (SDL_Color){0, 155, 145, 255}
-                                 : (SDL_Color){0, 125, 118, 255};
-    SDL_SetRenderDrawColor(rr, 0, 55, 55, 255);
+    SDL_Color bg = btn->clicked  ? (SDL_Color){120, 20, 55, 255}
+                 : btn->hovered  ? (SDL_Color){200, 60,100, 255}
+                                 : (SDL_Color){165, 40, 80, 255};
+    SDL_SetRenderDrawColor(rr, 90, 10, 40, 255);
     SDL_Rect sh = {btn->rect.x+3, btn->rect.y+3, btn->rect.w, btn->rect.h};
     SDL_RenderFillRect(rr, &sh);
     SDL_SetRenderDrawColor(rr, bg.r, bg.g, bg.b, bg.a);
     SDL_RenderFillRect(rr, &btn->rect);
-    SDL_SetRenderDrawColor(rr, 0, 80, 80, 255);
+    SDL_SetRenderDrawColor(rr, 90, 10, 40, 255);
     SDL_RenderDrawRect(rr, &btn->rect);
     SDL_Surface* s = TTF_RenderText_Blended(f, btn->text, (SDL_Color){255,255,255,255});
     if (s) {
@@ -168,6 +170,120 @@ static void renderButton(SDL_Renderer* rr, TTF_Font* f, Button* btn) {
         SDL_RenderCopy(rr, tx, NULL, &tr);
         SDL_FreeSurface(s); SDL_DestroyTexture(tx);
     }
+}
+
+static void drawFilledCircle(SDL_Renderer* r, int cx, int cy, int radius) {
+    for (int dy = -radius; dy <= radius; dy++)
+        for (int dx = -radius; dx <= radius; dx++)
+            if (dx*dx + dy*dy <= radius*radius)
+                SDL_RenderDrawPoint(r, cx+dx, cy+dy);
+}
+
+static void drawHelloKitty(SDL_Renderer* r, int cx, int cy, int size) {
+    int s = size;
+    /* ---- LEFT EAR (normal) ---- */
+    SDL_SetRenderDrawColor(r, 255, 228, 240, 255);
+    for (int dy = -s; dy <= 0; dy++)
+        for (int dx = -(s/2); dx <= s/2; dx++)
+            if (abs(dx)*3/2 + abs(dy) <= s*9/16)
+                SDL_RenderDrawPoint(r, cx - s*3/4 + dx, cy - s*6/7 + dy);
+    /* ---- RIGHT EAR (bigger = weird asymmetry) ---- */
+    for (int dy = -(s + s/5); dy <= 0; dy++)
+        for (int dx = -(s*55/100); dx <= s*55/100; dx++)
+            if (abs(dx)*3/2 + abs(dy) <= s*10/16)
+                SDL_RenderDrawPoint(r, cx + s*3/4 + dx, cy - s*6/7 + dy);
+    /* ---- INNER EARS (hot pink) ---- */
+    SDL_SetRenderDrawColor(r, 255, 105, 155, 255);
+    for (int dy = -(s/2); dy <= 0; dy++)
+        for (int dx = -(s/4); dx <= s/4; dx++)
+            if (abs(dx)*2 + abs(dy) <= s*5/16)
+                SDL_RenderDrawPoint(r, cx - s*3/4 + dx, cy - s*6/7 + dy);
+    for (int dy = -(s*3/5); dy <= 0; dy++)
+        for (int dx = -(s*3/10); dx <= s*3/10; dx++)
+            if (abs(dx)*2 + abs(dy) <= s*6/16)
+                SDL_RenderDrawPoint(r, cx + s*3/4 + dx, cy - s*6/7 + dy);
+    /* ---- FACE ---- */
+    SDL_SetRenderDrawColor(r, 255, 253, 255, 255);
+    drawFilledCircle(r, cx, cy, s);
+    /* ---- FACE OUTLINE (double thick ring) ---- */
+    SDL_SetRenderDrawColor(r, 220, 150, 180, 255);
+    for (int ofs = 0; ofs <= 2; ofs++) {
+        for (int a = 0; a < 360; a++) {
+            float rad = (float)a * 3.14159f / 180.0f;
+            SDL_RenderDrawPoint(r, cx + (int)(cosf(rad)*(s + ofs)),
+                                   cy + (int)(sinf(rad)*(s + ofs)));
+        }
+    }
+    /* ---- BLUSH CHEEKS (huge soft blobs) ---- */
+    SDL_SetRenderDrawColor(r, 255, 148, 185, 255);
+    drawFilledCircle(r, cx - s/2, cy + s/4, s*3/10);
+    drawFilledCircle(r, cx + s/2, cy + s/4, s*3/10);
+    SDL_SetRenderDrawColor(r, 255, 205, 220, 255);
+    drawFilledCircle(r, cx - s/2, cy + s/4, s*15/100);
+    drawFilledCircle(r, cx + s/2, cy + s/4, s*15/100);
+    /* tiny freckle dots on cheeks (3 per side) */
+    SDL_SetRenderDrawColor(r, 228, 115, 150, 220);
+    drawFilledCircle(r, cx - s*36/100, cy + s*38/100, s/20 + 1);
+    drawFilledCircle(r, cx - s*52/100, cy + s*38/100, s/20 + 1);
+    drawFilledCircle(r, cx - s*44/100, cy + s*45/100, s/20 + 1);
+    drawFilledCircle(r, cx + s*36/100, cy + s*38/100, s/20 + 1);
+    drawFilledCircle(r, cx + s*52/100, cy + s*38/100, s/20 + 1);
+    drawFilledCircle(r, cx + s*44/100, cy + s*45/100, s/20 + 1);
+    /* ---- LEFT EYE (normal size) ---- */
+    SDL_SetRenderDrawColor(r, 15, 15, 25, 255);
+    drawFilledCircle(r, cx - s/3, cy - s/9, s/6);
+    /* ---- RIGHT EYE (slightly bigger = weird) ---- */
+    drawFilledCircle(r, cx + s/3, cy - s/9, s*7/40);
+    /* sparkly shine dots (2 per eye) */
+    SDL_SetRenderDrawColor(r, 255, 255, 255, 255);
+    drawFilledCircle(r, cx - s/3 + s/14, cy - s/9 - s/13, s/12);
+    drawFilledCircle(r, cx - s/3 - s/13, cy - s/9 + s/16, s/22);
+    drawFilledCircle(r, cx + s/3 + s/14, cy - s/9 - s/13, s/12);
+    drawFilledCircle(r, cx + s/3 - s/13, cy - s/9 + s/16, s/22);
+    /* ---- NOSE (golden heart shape, off-center) ---- */
+    SDL_SetRenderDrawColor(r, 255, 195, 25, 255);
+    drawFilledCircle(r, cx + s/8, cy + s/10, s/10);
+    SDL_SetRenderDrawColor(r, 255, 228, 55, 255);
+    drawFilledCircle(r, cx + s/8 - s/16, cy + s/10 - s/16, s/14);
+    drawFilledCircle(r, cx + s/8 + s/16, cy + s/10 - s/16, s/14);
+    /* ---- WEIRD SMILE (Hello Kitty normally has no mouth!) ---- */
+    SDL_SetRenderDrawColor(r, 175, 45, 80, 240);
+    for (int dx = -(s*15/100); dx <= s*15/100; dx++) {
+        float t = (float)dx / (float)(s*16/100 + 1);
+        int curvey = (int)((float)s * 0.07f * t * t);
+        SDL_RenderDrawPoint(r, cx + dx + s/18, cy + s*27/100 + curvey);
+        SDL_RenderDrawPoint(r, cx + dx + s/18, cy + s*28/100 + curvey);
+        SDL_RenderDrawPoint(r, cx + dx + s/18, cy + s*29/100 + curvey);
+    }
+    /* ---- WHISKERS (long and dramatic, 6 total) ---- */
+    SDL_SetRenderDrawColor(r, 75, 75, 105, 215);
+    SDL_RenderDrawLine(r, cx - s/10, cy + s/10, cx - s - s*3/8, cy - s/9);
+    SDL_RenderDrawLine(r, cx - s/10, cy + s/7,  cx - s - s*3/8, cy + s*2/9);
+    SDL_RenderDrawLine(r, cx - s/10, cy + s/5,  cx - s - s*3/8, cy + s/2);
+    SDL_RenderDrawLine(r, cx + s*2/9, cy + s/10, cx + s + s*3/8, cy - s/9);
+    SDL_RenderDrawLine(r, cx + s*2/9, cy + s/7,  cx + s + s*3/8, cy + s*2/9);
+    SDL_RenderDrawLine(r, cx + s*2/9, cy + s/5,  cx + s + s*3/8, cy + s/2);
+    /* ---- BOW (oversized dramatic red bow, right-ear side) ---- */
+    SDL_SetRenderDrawColor(r, 210, 20, 60, 255);
+    for (int dy = -(s*40/100); dy <= s*40/100; dy++)
+        for (int dx = -(s*45/100); dx <= 0; dx++)
+            if (abs(dx)*6/5 + abs(dy) <= s*44/100 + 2)
+                SDL_RenderDrawPoint(r, cx + s*72/100 + dx, cy - s*108/100 + dy);
+    for (int dy = -(s*40/100); dy <= s*40/100; dy++)
+        for (int dx = 0; dx <= s*45/100; dx++)
+            if (abs(dx)*6/5 + abs(dy) <= s*44/100 + 2)
+                SDL_RenderDrawPoint(r, cx + s*72/100 + dx + 3, cy - s*108/100 + dy);
+    /* bow knot (bright pink) */
+    SDL_SetRenderDrawColor(r, 255, 75, 125, 255);
+    drawFilledCircle(r, cx + s*72/100, cy - s*108/100, s*15/100);
+    /* bow highlight shine */
+    SDL_SetRenderDrawColor(r, 255, 205, 225, 220);
+    drawFilledCircle(r, cx + s*67/100, cy - s*117/100, s*6/100 + 1);
+    /* sparkle dots near bow */
+    SDL_SetRenderDrawColor(r, 255, 245, 250, 255);
+    drawFilledCircle(r, cx + s*56/100, cy - s*132/100, s*4/100 + 1);
+    drawFilledCircle(r, cx + s*94/100, cy - s*127/100, s*4/100 + 1);
+    drawFilledCircle(r, cx + s*104/100, cy - s*107/100, s*35/1000 + 1);
 }
 
 static void drawGraph(SDL_Renderer* rr, TTF_Font* fSmall,
@@ -286,8 +402,10 @@ int main(int argc, char* argv[]) {
     Button btnCompute = {{55, 553, 175, 46}, "COMPUTE", 0, 0};
     Button btnClear   = {{255,553, 175, 46}, "CLEAR",   0, 0};
     Button btnBack    = {{30, 30, 160, 50},  "< BACK",  0, 0};
+    Button btnConfirmYes = {{WIN_W/2-130, WIN_H/2+30, 110, 44}, "YES",    0, 0};
+    Button btnConfirmNo  = {{WIN_W/2+20,  WIN_H/2+30, 110, 44}, "CANCEL", 0, 0};
 
-    int    hasSol = 0, hasError = 0, activeInput = -1, quit = 0;
+    int    hasSol = 0, hasError = 0, activeInput = -1, quit = 0, showConfirm = 0;
     double solX = 0, solY = 0;
     double sA1=0,sB1=0,sC1=0, sA2=0,sB2=0,sC2=0;
     int    sn1=1,sn2=1,sm1=1,sm2=1;
@@ -345,58 +463,51 @@ int main(int argc, char* argv[]) {
             else if (screen == SCREEN_SOLVER) {
                 if (ev.type == SDL_MOUSEBUTTONDOWN) {
                     int mx = ev.button.x, my = ev.button.y;
-                    activeInput = -1;
-                    for (int i = 0; i < 10; i++) {
-                        inputs[i].active = 0;
-                        if (mx >= inputs[i].rect.x && mx < inputs[i].rect.x+inputs[i].rect.w &&
-                            my >= inputs[i].rect.y && my < inputs[i].rect.y+inputs[i].rect.h) {
-                            activeInput = i;
-                            inputs[i].active = 1;
-                        }
-                    }
 
-                    if (mx >= btnCompute.rect.x && mx < btnCompute.rect.x+btnCompute.rect.w &&
-                        my >= btnCompute.rect.y && my < btnCompute.rect.y+btnCompute.rect.h) {
-                        btnCompute.clicked = 1;
-                        hasSol = 0; hasError = 0;
-                        strcpy(errorMsg, "");
+                    /* confirm modal buttons take priority */
+                    if (showConfirm) {
+                        if (mx>=btnConfirmYes.rect.x && mx<btnConfirmYes.rect.x+btnConfirmYes.rect.w &&
+                            my>=btnConfirmYes.rect.y && my<btnConfirmYes.rect.y+btnConfirmYes.rect.h) {
+                            showConfirm = 0;
+                            hasSol = 0; hasError = 0;
+                            strcpy(errorMsg, "");
 
-                        sA1 = atof(inputs[0].value); sn1 = (int)round(atof(inputs[1].value));
-                        sB1 = atof(inputs[2].value); sn2 = (int)round(atof(inputs[3].value));
-                        sC1 = atof(inputs[4].value);
-                        sA2 = atof(inputs[5].value); sm1 = (int)round(atof(inputs[6].value));
-                        sB2 = atof(inputs[7].value); sm2 = (int)round(atof(inputs[8].value));
-                        sC2 = atof(inputs[9].value);
+                            sA1 = atof(inputs[0].value); sn1 = (int)round(atof(inputs[1].value));
+                            sB1 = atof(inputs[2].value); sn2 = (int)round(atof(inputs[3].value));
+                            sC1 = atof(inputs[4].value);
+                            sA2 = atof(inputs[5].value); sm1 = (int)round(atof(inputs[6].value));
+                            sB2 = atof(inputs[7].value); sm2 = (int)round(atof(inputs[8].value));
+                            sC2 = atof(inputs[9].value);
 
-                        if (sn1==0 || sn2==0 || sm1==0 || sm2==0) {
-                            hasError = 1;
-                            strcpy(errorMsg, "Exponents (n1, n2, m1, m2) cannot be zero.");
-                        } else if (fabs(sA1) < 1e-14) {
-                            hasError = 1;
-                            strcpy(errorMsg, "A1 cannot be zero (x cannot be isolated from Eq1).");
-                        } else if (fabs(sB2) < 1e-14) {
-                            hasError = 1;
-                            strcpy(errorMsg, "B2 cannot be zero.");
-                        } else {
-                            double yLo = NAN, yHi = NAN;
-                            double prevY = -50.0;
-                            double prevF = fSubEq(-50.0, sA1,sn1,sB1,sn2,sC1,
-                                                          sA2,sm1,sB2,sm2,sC2);
+                            if (sn1==0 || sn2==0 || sm1==0 || sm2==0) {
+                                hasError = 1;
+                                strcpy(errorMsg, "Exponents (n1, n2, m1, m2) cannot be zero.");
+                            } else if (fabs(sA1) < 1e-14) {
+                                hasError = 1;
+                                strcpy(errorMsg, "A1 cannot be zero (x cannot be isolated from Eq1).");
+                            } else if (fabs(sB2) < 1e-14) {
+                                hasError = 1;
+                                strcpy(errorMsg, "B2 cannot be zero.");
+                            } else {
+                                double yLo = NAN, yHi = NAN;
+                                double prevY = -50.0;
+                                double prevF = fSubEq(-50.0, sA1,sn1,sB1,sn2,sC1,
+                                                              sA2,sm1,sB2,sm2,sC2);
 
-                            for (double ys = -49.99; ys <= 50.0; ys += 0.01) {
-                                double fv = fSubEq(ys, sA1,sn1,sB1,sn2,sC1,
-                                                        sA2,sm1,sB2,sm2,sC2);
-                                if (isnan(fv) || isnan(prevF)) {
-                                    prevF = fv; prevY = ys; continue;
+                                for (double ys = -49.99; ys <= 50.0; ys += 0.01) {
+                                    double fv = fSubEq(ys, sA1,sn1,sB1,sn2,sC1,
+                                                            sA2,sm1,sB2,sm2,sC2);
+                                    if (isnan(fv) || isnan(prevF)) {
+                                        prevF = fv; prevY = ys; continue;
+                                    }
+                                    if (prevF * fv < 0) {
+                                        yLo = prevY; yHi = ys; break;
+                                    }
+                                    if (fabs(fv) < 1e-10) {
+                                        yLo = ys - 0.005; yHi = ys + 0.005; break;
+                                    }
+                                    prevF = fv; prevY = ys;
                                 }
-                                if (prevF * fv < 0) {
-                                    yLo = prevY; yHi = ys; break;
-                                }
-                                if (fabs(fv) < 1e-10) {
-                                    yLo = ys - 0.005; yHi = ys + 0.005; break;
-                                }
-                                prevF = fv; prevY = ys;
-                            }
 
                             if (!isnan(yLo) && !isnan(yHi)) {
                                 for (int b = 0; b < 100; b++) {
@@ -427,14 +538,36 @@ int main(int argc, char* argv[]) {
                                 strcpy(errorMsg, "No solution found in search range. Try different values.");
                             }
                         }
-                    }
+                        } /* end YES */
+                        if (mx>=btnConfirmNo.rect.x && mx<btnConfirmNo.rect.x+btnConfirmNo.rect.w &&
+                            my>=btnConfirmNo.rect.y && my<btnConfirmNo.rect.y+btnConfirmNo.rect.h) {
+                            showConfirm = 0;
+                        }
+                        /* swallow all other clicks while modal is open */
+                    } else {
+                        /* normal input handling */
+                        activeInput = -1;
+                        for (int i = 0; i < 10; i++) {
+                            inputs[i].active = 0;
+                            if (mx >= inputs[i].rect.x && mx < inputs[i].rect.x+inputs[i].rect.w &&
+                                my >= inputs[i].rect.y && my < inputs[i].rect.y+inputs[i].rect.h) {
+                                activeInput = i;
+                                inputs[i].active = 1;
+                            }
+                        }
 
-                    if (mx >= btnClear.rect.x && mx < btnClear.rect.x+btnClear.rect.w &&
-                        my >= btnClear.rect.y && my < btnClear.rect.y+btnClear.rect.h) {
-                        btnClear.clicked = 1;
-                        for (int i = 0; i < 10; i++) strcpy(inputs[i].value, "");
-                        hasSol = 0; hasError = 0;
-                        strcpy(errorMsg, "");
+                        if (mx >= btnCompute.rect.x && mx < btnCompute.rect.x+btnCompute.rect.w &&
+                            my >= btnCompute.rect.y && my < btnCompute.rect.y+btnCompute.rect.h) {
+                            showConfirm = 1;
+                        }
+
+                        if (mx >= btnClear.rect.x && mx < btnClear.rect.x+btnClear.rect.w &&
+                            my >= btnClear.rect.y && my < btnClear.rect.y+btnClear.rect.h) {
+                            btnClear.clicked = 1;
+                            for (int i = 0; i < 10; i++) strcpy(inputs[i].value, "");
+                            hasSol = 0; hasError = 0;
+                            strcpy(errorMsg, "");
+                        }
                     }
                 }
 
@@ -448,9 +581,10 @@ int main(int argc, char* argv[]) {
 #define HOVER(b) ((b).hovered = (mx>=(b).rect.x && mx<(b).rect.x+(b).rect.w && \
                                   my>=(b).rect.y && my<(b).rect.y+(b).rect.h))
                     HOVER(btnCompute); HOVER(btnClear);
+                    HOVER(btnConfirmYes); HOVER(btnConfirmNo);
                 }
 
-                if (ev.type == SDL_TEXTINPUT && activeInput >= 0) {
+                if (ev.type == SDL_TEXTINPUT && activeInput >= 0 && !showConfirm) {
                     char c = ev.text.text[0];
                     int isExp = (activeInput==1||activeInput==3||activeInput==6||activeInput==8);
                     int valid = (c>='0'&&c<='9') || (!isExp && c=='.') || (c=='-');
@@ -463,7 +597,7 @@ int main(int argc, char* argv[]) {
                     }
                 }
 
-                if (ev.type == SDL_KEYDOWN && activeInput >= 0) {
+                if (ev.type == SDL_KEYDOWN && activeInput >= 0 && !showConfirm) {
                     if (ev.key.keysym.sym == SDLK_BACKSPACE) {
                         int len = strlen(inputs[activeInput].value);
                         if (len > 0) inputs[activeInput].value[len-1] = '\0';
@@ -483,7 +617,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (screen == SCREEN_LANDING) {
-            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            SDL_SetRenderDrawColor(renderer, 255, 220, 230, 255);
             SDL_RenderClear(renderer);
 
             int cx = WIN_W / 2;
@@ -497,6 +631,11 @@ int main(int argc, char* argv[]) {
             renderCenterText(renderer, fLarge,
                              "A solver program that makes you life easier",
                              cx, 180, gray);
+
+            /* Hello Kitty - left side */
+            drawHelloKitty(renderer, 140, 500, 65);
+            /* Hello Kitty - right side */
+            drawHelloKitty(renderer, WIN_W-140, 500, 65);
 
             {
                 SDL_Color bg = hoverSolver ? (SDL_Color){185,185,185,255}
@@ -567,7 +706,7 @@ int main(int argc, char* argv[]) {
         }
 
         else if (screen == SCREEN_ABOUT) {
-            SDL_SetRenderDrawColor(renderer, 240, 252, 250, 255);
+            SDL_SetRenderDrawColor(renderer, 255, 220, 230, 255);
             SDL_RenderClear(renderer);
 
             int cx = WIN_W / 2;
@@ -631,7 +770,7 @@ int main(int argc, char* argv[]) {
         }
 
         else if (screen == SCREEN_LOADING) {
-            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            SDL_SetRenderDrawColor(renderer, 255, 220, 230, 255);
             SDL_RenderClear(renderer);
 
             int cx = WIN_W / 2;
@@ -654,6 +793,10 @@ int main(int argc, char* argv[]) {
             renderCenterBold(renderer, fBig, "SORIANO, GILBERT",      cx, 500, black);
 
             renderCenterText(renderer, fLarge, "Loading Program", cx, 580, black);
+
+            /* Hello Kitty on loading screen - sides, no overlap with centered text */
+            drawHelloKitty(renderer, 155, 400, 90);
+            drawHelloKitty(renderer, WIN_W - 155, 400, 90);
 
             int barW = 420, barH = 42;
             int barX = cx - barW/2, barY = 620;
@@ -684,22 +827,22 @@ int main(int argc, char* argv[]) {
         }
 
         else if (screen == SCREEN_SOLVER) {
-            SDL_SetRenderDrawColor(renderer, 238, 252, 250, 255);
+            SDL_SetRenderDrawColor(renderer, 255, 220, 230, 255);
             SDL_RenderClear(renderer);
 
             SDL_Color white   = {255,255,255,255};
-            SDL_Color cream   = {200,242,238,255};
-            SDL_Color secCol  = {0,  80, 80, 255};
-            SDL_Color darkTxt = {0,  55, 55, 255};
-            SDL_Color hintCol = {80,150,145, 255};
-            SDL_Color panelBg = {243,255,253, 255};
-            SDL_Color panBdr  = {120,195,188, 255};
-            SDL_Color eqBg    = {230,252,248, 255};
-            SDL_Color eqBdr   = {140,205,198, 255};
+            SDL_Color cream   = {255,220,235,255};
+            SDL_Color secCol  = {160, 30, 70, 255};
+            SDL_Color darkTxt = {100, 20, 50, 255};
+            SDL_Color hintCol = {180, 100,130, 255};
+            SDL_Color panelBg = {255, 240,248, 255};
+            SDL_Color panBdr  = {220, 140,170, 255};
+            SDL_Color eqBg    = {255, 230,240, 255};
+            SDL_Color eqBdr   = {210, 150,175, 255};
 
             for (int i = 0; i < 80; i++) {
                 int v = (i<5)?(i*8):(i>75?((79-i)*10):0);
-                SDL_SetRenderDrawColor(renderer, 0+v, 112+v/2, 108+v/2, 255);
+                SDL_SetRenderDrawColor(renderer, 180+v/4, 30+v/4, 70+v/4, 255);
                 SDL_RenderDrawLine(renderer, 0, i, WIN_W, i);
             }
             renderBold(renderer, fTitle, "SUBSTITUTION METHOD", 30, 14, white);
@@ -954,6 +1097,37 @@ int main(int argc, char* argv[]) {
                 if (di*di+dj*dj<=25)
                     SDL_RenderDrawPoint(renderer,1127+di,LY+76+dj);
             renderText(renderer,fNorm,"Solution Point",1153,LY+70,(SDL_Color){155,20,20,255});
+
+            /* Hello Kitty mascot in solver - bottom right corner */
+            drawHelloKitty(renderer, 1530, 855, 40);
+
+            /* ---- CONFIRM MODAL ---- */
+            if (showConfirm) {
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 130);
+                SDL_Rect overlay = {0, 0, WIN_W, WIN_H};
+                SDL_RenderFillRect(renderer, &overlay);
+                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
+                int mx2 = WIN_W/2, my2 = WIN_H/2 - 30;
+                drawPanel(renderer, mx2-240, my2-110, 480, 230,
+                          (SDL_Color){255,240,248,255}, (SDL_Color){220,100,140,255});
+                SDL_SetRenderDrawColor(renderer, 210, 80, 120, 255);
+                SDL_Rect mhdr = {mx2-240, my2-110, 480, 40};
+                SDL_RenderFillRect(renderer, &mhdr);
+                renderCenterBold(renderer, fLarge, "Confirm Computation",
+                                 mx2, my2-102, (SDL_Color){255,255,255,255});
+
+                /* small kitty in modal */
+                drawHelloKitty(renderer, mx2, my2-42, 22);
+
+                renderCenterText(renderer, fNorm, "Are you sure you want to compute",
+                                 mx2, my2+5, (SDL_Color){80,20,50,255});
+                renderCenterText(renderer, fNorm, "with the current values?",
+                                 mx2, my2+24, (SDL_Color){80,20,50,255});
+                renderButton(renderer, fNorm, &btnConfirmYes);
+                renderButton(renderer, fNorm, &btnConfirmNo);
+            }
 
         }
 
