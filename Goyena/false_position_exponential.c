@@ -502,7 +502,7 @@ int main(int argc, char* argv[]) {
     Button clearBtn   = {{200, 490, 130, 42}, "CLEAR", 0, 0};
 
     /* Solver state */
-    char resultText[500] = "Enter values and initial guesses,\nthen press COMPUTE";
+    char resultText[500] = "Enter coefficients and initial guesses (x0 and x1)";
     double finalRoot = 0;
     int hasValidRoot = 0;
     double coefA = 0, coefB = 0;
@@ -587,7 +587,7 @@ int main(int argc, char* argv[]) {
                     if (mx >= clearBtn.rect.x && mx <= clearBtn.rect.x + clearBtn.rect.w &&
                         my >= clearBtn.rect.y && my <= clearBtn.rect.y + clearBtn.rect.h) {
                         for (int i = 0; i < 4; i++) strcpy(inputs[i].value, "");
-                        strcpy(resultText, "Enter values and initial guesses,\nthen press COMPUTE");
+                        strcpy(resultText, "Enter coefficients and initial guesses (x0 and x1)");
                         hasValidRoot = 0;
                         totalIterations = 0;
                         tableScrollOffset = 0;
@@ -832,12 +832,11 @@ int main(int argc, char* argv[]) {
 
             SDL_Color white = {255, 255, 255, 255};
             SDL_Color lightPink = {255, 185, 215, 255};
-            renderTextCenteredBold(renderer, fontTitle, "FALSE POSITION METHOD", WINDOW_WIDTH / 2, 5, (SDL_Color){255, 130, 180, 255});
-            renderTextCentered(renderer, fontLarge, "Exponential Equation: e^x - ax - b = 0", WINDOW_WIDTH / 2, 38, lightPink);
+            renderTextBold(renderer, fontTitle, "FALSE POSITION METHOD", 20, 5, (SDL_Color){255, 130, 180, 255});
+            renderText(renderer, fontLarge, "Exponential Equation: e^x - ax - b = 0", 30, 38, lightPink);
 
-            /* Top-right: submitter name */
-            renderText(renderer, fontSmall, "Submitted by:", 1055, 14, (SDL_Color){220, 140, 175, 255});
-            renderTextBold(renderer, fontSmall, "Khurt Goyena", 1055, 32, lightPink);
+            renderText(renderer, fontSmall, "MT211 - Numerical Method  |  Semestral Project", 1030, 10, lightPink);
+            renderText(renderer, fontSmall, "BSCPE 22005  |  Khurt Goyena", 1030, 32, lightPink);
 
             /* ── Left Panel (semi-transparent dark panel) ── */
             SDL_SetRenderDrawColor(renderer, 60, 12, 38, 225);
@@ -864,27 +863,27 @@ int main(int argc, char* argv[]) {
             renderText(renderer, fontMedium, "f(x) = e^x - ax - b", 50, 138, (SDL_Color){255, 150, 190, 255});
             renderText(renderer, fontSmall, "Find root where f(x) = 0", 55, 160, (SDL_Color){220, 120, 160, 255});
 
-            inputs[0].rect = (SDL_Rect){140, 195, 150, 35};
-            inputs[1].rect = (SDL_Rect){140, 240, 150, 35};
-            inputs[2].rect = (SDL_Rect){140, 308, 150, 35};
-            inputs[3].rect = (SDL_Rect){140, 353, 150, 35};
+            inputs[0].rect = (SDL_Rect){140, 200, 150, 35};
+            inputs[1].rect = (SDL_Rect){140, 250, 150, 35};
+            inputs[2].rect = (SDL_Rect){140, 310, 150, 35};
+            inputs[3].rect = (SDL_Rect){140, 360, 150, 35};
 
             /* Divider between coefficients and guesses */
             SDL_SetRenderDrawColor(renderer, 190, 65, 110, 255);
-            SDL_RenderDrawLine(renderer, 35, 299, 310, 299);
-            renderText(renderer, fontSmall, "Initial Guesses", 95, 282, (SDL_Color){240, 120, 165, 255});
+            SDL_RenderDrawLine(renderer, 35, 295, 310, 295);
+            renderText(renderer, fontSmall, "Initial Guesses", 95, 290, (SDL_Color){240, 120, 165, 255});
 
             for (int i = 0; i < 4; i++) renderInputBox(renderer, font, &inputs[i]);
 
-            computeBtn.rect = (SDL_Rect){30, 405, 130, 42};
-            clearBtn.rect   = (SDL_Rect){180, 405, 130, 42};
+            computeBtn.rect = (SDL_Rect){30, 420, 130, 42};
+            clearBtn.rect   = (SDL_Rect){180, 420, 130, 42};
             renderButton(renderer, font, &computeBtn);
             renderButton(renderer, font, &clearBtn);
 
             /* Status */
-            renderTextBold(renderer, font, "STATUS", 125, 460, sectionColor);
+            renderTextBold(renderer, font, "STATUS", 125, 485, sectionColor);
             SDL_SetRenderDrawColor(renderer, 80, 18, 45, 255);
-            SDL_Rect statusBox = {30, 485, 280, 78};
+            SDL_Rect statusBox = {30, 510, 280, 55};
             SDL_RenderFillRect(renderer, &statusBox);
             SDL_SetRenderDrawColor(renderer, 200, 70, 120, 255);
             SDL_RenderDrawRect(renderer, &statusBox);
@@ -893,13 +892,34 @@ int main(int argc, char* argv[]) {
                 char resultCopy[500];
                 strcpy(resultCopy, resultText);
                 char* line = strtok(resultCopy, "\n");
-                int ry = 493;
+                int ry = 517;
                 while (line) {
                     SDL_Color resultColor = hasValidRoot ? (SDL_Color){50, 255, 150, 255} : (SDL_Color){255, 100, 100, 255};
                     renderText(renderer, fontSmall, line, 40, ry, resultColor);
                     ry += 18;
                     line = strtok(NULL, "\n");
                 }
+            }
+
+            /* Conclusion */
+            if (hasValidRoot) {
+                renderTextBold(renderer, font, "CONCLUSION", 100, 585, sectionColor);
+                SDL_SetRenderDrawColor(renderer, 75, 15, 42, 255);
+                SDL_Rect concBox = {30, 610, 280, 105};
+                SDL_RenderFillRect(renderer, &concBox);
+                SDL_SetRenderDrawColor(renderer, 220, 80, 130, 255);
+                SDL_RenderDrawRect(renderer, &concBox);
+
+                char buffer[200];
+                SDL_Color concColor = {255, 160, 200, 255};
+                formatEquation(buffer, (int)coefA, (int)coefB);
+                renderTextBold(renderer, fontSmall, buffer, 40, 620, concColor);
+                sprintf(buffer, "Root: x = %.6lf", finalRoot);
+                renderTextBold(renderer, font, buffer, 40, 645, (SDL_Color){255, 210, 230, 255});
+                sprintf(buffer, "Iterations: %d", totalIterations);
+                renderText(renderer, fontSmall, buffer, 40, 675, darkText);
+                sprintf(buffer, "Tolerance: %.4lf", TOLERANCE);
+                renderText(renderer, fontSmall, buffer, 40, 695, darkText);
             }
 
             /* ── Center Panel: Iteration Table ── */
@@ -930,7 +950,7 @@ int main(int argc, char* argv[]) {
                 renderTextBold(renderer, fontSmall, "f(x2)",740, 134, hdrColor);
                 renderTextBold(renderer, fontSmall, "Error", 850, 134, hdrColor);
 
-                int maxVisibleRows = 15;
+                int maxVisibleRows = 20;
                 int startRow = tableScrollOffset;
                 int endRow = startRow + maxVisibleRows;
                 if (endRow > totalIterations) endRow = totalIterations;
@@ -983,26 +1003,6 @@ int main(int argc, char* argv[]) {
             } else {
                 renderText(renderer, font, "Enter coefficients and press COMPUTE", 440, 400, (SDL_Color){220, 100, 150, 255});
                 renderText(renderer, font, "to see iteration results here.", 480, 428, (SDL_Color){220, 100, 150, 255});
-            }
-
-            /* ── Conclusion (below iteration table) ── */
-            if (hasValidRoot) {
-                int concY = 547; /* 162 + 15*25 + 10 */
-                renderTextCenteredBold(renderer, font, "CONCLUSION", 650, concY, sectionColor);
-                SDL_SetRenderDrawColor(renderer, 75, 15, 42, 255);
-                SDL_Rect concBox = {355, concY + 22, 590, 108};
-                SDL_RenderFillRect(renderer, &concBox);
-                SDL_SetRenderDrawColor(renderer, 220, 80, 130, 255);
-                SDL_RenderDrawRect(renderer, &concBox);
-
-                char concBuf[200];
-                SDL_Color concColor = {255, 160, 200, 255};
-                formatEquation(concBuf, (int)coefA, (int)coefB);
-                renderTextBold(renderer, fontSmall, concBuf, 365, concY + 30, concColor);
-                sprintf(concBuf, "Root: x = %.6lf", finalRoot);
-                renderTextBold(renderer, font, concBuf, 365, concY + 52, (SDL_Color){255, 210, 230, 255});
-                sprintf(concBuf, "Iterations: %d  |  Tolerance: %.4lf", totalIterations, TOLERANCE);
-                renderText(renderer, fontSmall, concBuf, 365, concY + 80, darkText);
             }
 
             /* ── Right Panel: Graph ── */
