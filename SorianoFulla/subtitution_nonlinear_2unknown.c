@@ -367,19 +367,20 @@ int main(int argc, char* argv[]) {
     SDL_Window* window = SDL_CreateWindow(
         "Substitution Method - Non-Linear Equations (2 Unknowns)",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        WIN_W, WIN_H, SDL_WINDOW_SHOWN);
+        1280, 720, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1,
         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_RenderSetLogicalSize(renderer, WIN_W, WIN_H);
 
-    TTF_Font* fHuge  = TTF_OpenFont("font.ttf", 36);
-    TTF_Font* fBig   = TTF_OpenFont("font.ttf", 28);
-    TTF_Font* fTitle = TTF_OpenFont("font.ttf", 27);
-    TTF_Font* fLarge = TTF_OpenFont("font.ttf", 20);
-    TTF_Font* fMed   = TTF_OpenFont("font.ttf", 17);
-    TTF_Font* fNorm  = TTF_OpenFont("font.ttf", 15);
-    TTF_Font* fSmall = TTF_OpenFont("font.ttf", 13);
-    TTF_Font* fSup   = TTF_OpenFont("font.ttf", 11);
-    TTF_Font* fSub   = TTF_OpenFont("font.ttf", 11);
+    TTF_Font* fHuge  = TTF_OpenFont("font.ttf", 38);
+    TTF_Font* fBig   = TTF_OpenFont("font.ttf", 30);
+    TTF_Font* fTitle = TTF_OpenFont("font.ttf", 29);
+    TTF_Font* fLarge = TTF_OpenFont("font.ttf", 22);
+    TTF_Font* fMed   = TTF_OpenFont("font.ttf", 19);
+    TTF_Font* fNorm  = TTF_OpenFont("font.ttf", 17);
+    TTF_Font* fSmall = TTF_OpenFont("font.ttf", 15);
+    TTF_Font* fSup   = TTF_OpenFont("font.ttf", 13);
+    TTF_Font* fSub   = TTF_OpenFont("font.ttf", 13);
 
     if (!fHuge||!fBig||!fTitle||!fLarge||!fMed||!fNorm||!fSmall||!fSup||!fSub) {
         printf("Font error: %s\n", TTF_GetError()); return 1;
@@ -404,6 +405,7 @@ int main(int argc, char* argv[]) {
     Button btnBack    = {{30, 30, 160, 50},  "< BACK",  0, 0};
     Button btnConfirmYes = {{WIN_W/2-130, WIN_H/2+30, 110, 44}, "YES",    0, 0};
     Button btnConfirmNo  = {{WIN_W/2+20,  WIN_H/2+30, 110, 44}, "CANCEL", 0, 0};
+    Button btnSolverBack = {{0, 0, 170, 44}, "< BACK", 0, 0};
 
     int    hasSol = 0, hasError = 0, activeInput = -1, quit = 0, showConfirm = 0;
     double solX = 0, solY = 0;
@@ -464,11 +466,41 @@ int main(int argc, char* argv[]) {
                 if (ev.type == SDL_MOUSEBUTTONDOWN) {
                     int mx = ev.button.x, my = ev.button.y;
 
-                    /* confirm modal buttons take priority */
+                    /* clear confirm modal takes priority */
                     if (showConfirm) {
                         if (mx>=btnConfirmYes.rect.x && mx<btnConfirmYes.rect.x+btnConfirmYes.rect.w &&
                             my>=btnConfirmYes.rect.y && my<btnConfirmYes.rect.y+btnConfirmYes.rect.h) {
                             showConfirm = 0;
+                            for (int i = 0; i < 10; i++) strcpy(inputs[i].value, defaults[i]);
+                            hasSol = 0; hasError = 0;
+                            strcpy(errorMsg, "");
+                        }
+                        if (mx>=btnConfirmNo.rect.x && mx<btnConfirmNo.rect.x+btnConfirmNo.rect.w &&
+                            my>=btnConfirmNo.rect.y && my<btnConfirmNo.rect.y+btnConfirmNo.rect.h) {
+                            showConfirm = 0;
+                        }
+                        /* swallow all other clicks while modal is open */
+                    } else {
+                        /* SOLVER BACK button */
+                        if (mx >= btnSolverBack.rect.x && mx < btnSolverBack.rect.x+btnSolverBack.rect.w &&
+                            my >= btnSolverBack.rect.y && my < btnSolverBack.rect.y+btnSolverBack.rect.h) {
+                            screen = SCREEN_LANDING;
+                        }
+
+                        /* normal input handling */
+                        activeInput = -1;
+                        for (int i = 0; i < 10; i++) {
+                            inputs[i].active = 0;
+                            if (mx >= inputs[i].rect.x && mx < inputs[i].rect.x+inputs[i].rect.w &&
+                                my >= inputs[i].rect.y && my < inputs[i].rect.y+inputs[i].rect.h) {
+                                activeInput = i;
+                                inputs[i].active = 1;
+                            }
+                        }
+
+                        if (mx >= btnCompute.rect.x && mx < btnCompute.rect.x+btnCompute.rect.w &&
+                            my >= btnCompute.rect.y && my < btnCompute.rect.y+btnCompute.rect.h) {
+                            btnCompute.clicked = 1;
                             hasSol = 0; hasError = 0;
                             strcpy(errorMsg, "");
 
@@ -538,35 +570,11 @@ int main(int argc, char* argv[]) {
                                 strcpy(errorMsg, "No solution found in search range. Try different values.");
                             }
                         }
-                        } /* end YES */
-                        if (mx>=btnConfirmNo.rect.x && mx<btnConfirmNo.rect.x+btnConfirmNo.rect.w &&
-                            my>=btnConfirmNo.rect.y && my<btnConfirmNo.rect.y+btnConfirmNo.rect.h) {
-                            showConfirm = 0;
-                        }
-                        /* swallow all other clicks while modal is open */
-                    } else {
-                        /* normal input handling */
-                        activeInput = -1;
-                        for (int i = 0; i < 10; i++) {
-                            inputs[i].active = 0;
-                            if (mx >= inputs[i].rect.x && mx < inputs[i].rect.x+inputs[i].rect.w &&
-                                my >= inputs[i].rect.y && my < inputs[i].rect.y+inputs[i].rect.h) {
-                                activeInput = i;
-                                inputs[i].active = 1;
-                            }
-                        }
-
-                        if (mx >= btnCompute.rect.x && mx < btnCompute.rect.x+btnCompute.rect.w &&
-                            my >= btnCompute.rect.y && my < btnCompute.rect.y+btnCompute.rect.h) {
-                            showConfirm = 1;
                         }
 
                         if (mx >= btnClear.rect.x && mx < btnClear.rect.x+btnClear.rect.w &&
                             my >= btnClear.rect.y && my < btnClear.rect.y+btnClear.rect.h) {
-                            btnClear.clicked = 1;
-                            for (int i = 0; i < 10; i++) strcpy(inputs[i].value, "");
-                            hasSol = 0; hasError = 0;
-                            strcpy(errorMsg, "");
+                            showConfirm = 1;
                         }
                     }
                 }
@@ -574,6 +582,7 @@ int main(int argc, char* argv[]) {
                 if (ev.type == SDL_MOUSEBUTTONUP) {
                     btnCompute.clicked = 0;
                     btnClear.clicked   = 0;
+                    btnSolverBack.clicked = 0;
                 }
 
                 if (ev.type == SDL_MOUSEMOTION) {
@@ -581,6 +590,7 @@ int main(int argc, char* argv[]) {
 #define HOVER(b) ((b).hovered = (mx>=(b).rect.x && mx<(b).rect.x+(b).rect.w && \
                                   my>=(b).rect.y && my<(b).rect.y+(b).rect.h))
                     HOVER(btnCompute); HOVER(btnClear);
+                    HOVER(btnSolverBack);
                     HOVER(btnConfirmYes); HOVER(btnConfirmNo);
                 }
 
@@ -847,11 +857,13 @@ int main(int argc, char* argv[]) {
             }
             renderBold(renderer, fTitle, "SUBSTITUTION METHOD", 30, 14, white);
             renderText(renderer, fLarge, "Non-Linear Equations  |  2 Unknowns", 30, 46, cream);
-            renderText(renderer, fSmall, "MT211 - Numerical Methods  |  Semestral Project",
+            renderText(renderer, fSmall, "MT221 - Numerical Methods  |  Semestral Project",
                        1030, 10, cream);
             renderText(renderer, fNorm,  "BSCPE 22003", 1195, 32, white);
             renderText(renderer, fSmall, "Soriano, Gilbert  |  Fulla, John Micheal",
                        1115, 54, cream);
+            btnSolverBack.rect = (SDL_Rect){WIN_W-200, 16, 170, 44};
+            renderButton(renderer, fNorm, &btnSolverBack);
 
             drawPanel(renderer, 14, 88, 495, 835, panelBg, panBdr);
             renderBold(renderer, fLarge, "INPUT COEFFICIENTS", 85, 100, secCol);
@@ -1101,7 +1113,7 @@ int main(int argc, char* argv[]) {
             /* Hello Kitty mascot in solver - bottom right corner */
             drawHelloKitty(renderer, 1530, 855, 40);
 
-            /* ---- CONFIRM MODAL ---- */
+            /* ---- CLEAR CONFIRMATION MODAL ---- */
             if (showConfirm) {
                 SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 130);
@@ -1115,16 +1127,15 @@ int main(int argc, char* argv[]) {
                 SDL_SetRenderDrawColor(renderer, 210, 80, 120, 255);
                 SDL_Rect mhdr = {mx2-240, my2-110, 480, 40};
                 SDL_RenderFillRect(renderer, &mhdr);
-                renderCenterBold(renderer, fLarge, "Confirm Computation",
+                renderCenterBold(renderer, fLarge, "Confirm Clear",
                                  mx2, my2-102, (SDL_Color){255,255,255,255});
 
-                /* small kitty in modal */
                 drawHelloKitty(renderer, mx2, my2-42, 22);
 
-                renderCenterText(renderer, fNorm, "Are you sure you want to compute",
+                renderCenterText(renderer, fNorm, "Are you sure you want to clear",
                                  mx2, my2+5, (SDL_Color){80,20,50,255});
-                renderCenterText(renderer, fNorm, "with the current values?",
-                                 mx2, my2+24, (SDL_Color){80,20,50,255});
+                renderCenterText(renderer, fNorm, "all inputs and reset the equations?",
+                                 mx2, my2+27, (SDL_Color){80,20,50,255});
                 renderButton(renderer, fNorm, &btnConfirmYes);
                 renderButton(renderer, fNorm, &btnConfirmNo);
             }

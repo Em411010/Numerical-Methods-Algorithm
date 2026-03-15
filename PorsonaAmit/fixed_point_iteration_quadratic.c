@@ -112,30 +112,30 @@ static void drawPanel(SDL_Renderer* r, int x, int y, int w, int h,
 
 static void renderInputBox(SDL_Renderer* rr, TTF_Font* fLbl, TTF_Font* fVal,
                            InputBox* box) {
-    SDL_Color lc = {130,30,60,255};
+    SDL_Color lc = {155,35,110,255};
     renderBold(rr,fLbl,box->label,box->rect.x,box->rect.y-19,lc);
-    SDL_SetRenderDrawColor(rr,box->active?255:255,box->active?235:248,box->active?240:252,255);
+    SDL_SetRenderDrawColor(rr,box->active?255:255,box->active?230:245,box->active?245:252,255);
     SDL_RenderFillRect(rr,&box->rect);
-    SDL_SetRenderDrawColor(rr,box->active?200:190,box->active?70:130,box->active?120:160,255);
+    SDL_SetRenderDrawColor(rr,box->active?220:200,box->active?80:140,box->active?160:180,255);
     SDL_RenderDrawRect(rr,&box->rect);
     if (box->active) {
         SDL_Rect inn={box->rect.x+1,box->rect.y+1,box->rect.w-2,box->rect.h-2};
         SDL_RenderDrawRect(rr,&inn);
     }
     if (strlen(box->value)>0)
-        renderText(rr,fVal,box->value,box->rect.x+8,box->rect.y+8,(SDL_Color){80,20,50,255});
+        renderText(rr,fVal,box->value,box->rect.x+8,box->rect.y+8,(SDL_Color){110,20,80,255});
 }
 
 static void renderButton(SDL_Renderer* rr, TTF_Font* f, Button* btn) {
-    SDL_Color bg = btn->clicked  ? (SDL_Color){140,30,65,255}
-                 : btn->hovered  ? (SDL_Color){210,85,130,255}
-                                 : (SDL_Color){185,55,100,255};
-    SDL_SetRenderDrawColor(rr,90,20,45,255);
+    SDL_Color bg = btn->clicked  ? (SDL_Color){165,35,115,255}
+                 : btn->hovered  ? (SDL_Color){255,110,185,255}
+                                 : (SDL_Color){225,65,155,255};
+    SDL_SetRenderDrawColor(rr,130,20,90,255);
     SDL_Rect sh={btn->rect.x+3,btn->rect.y+3,btn->rect.w,btn->rect.h};
     SDL_RenderFillRect(rr,&sh);
     SDL_SetRenderDrawColor(rr,bg.r,bg.g,bg.b,255);
     SDL_RenderFillRect(rr,&btn->rect);
-    SDL_SetRenderDrawColor(rr,130,40,70,255);
+    SDL_SetRenderDrawColor(rr,175,45,130,255);
     SDL_RenderDrawRect(rr,&btn->rect);
     SDL_Surface* s = TTF_RenderText_Blended(f,btn->text,(SDL_Color){255,255,255,255});
     if (s) {
@@ -167,7 +167,7 @@ static void drawMountains(SDL_Renderer* rr, int baseY, int w) {
                 }
             }
             if (top < baseY) {
-                SDL_SetRenderDrawColor(rr,225,170,190,255);
+                SDL_SetRenderDrawColor(rr,255,185,215,255);
                 SDL_RenderDrawLine(rr,col,top,col,baseY);
             }
         }
@@ -197,9 +197,9 @@ static void drawMountains(SDL_Renderer* rr, int baseY, int w) {
                     int y1 = top + height * b / bands;
                     int y2 = top + height * (b + 1) / bands;
                     float t = (float)(b + 0.5f) / bands;
-                    int rv = (int)(195 + t*30);
-                    int gv = (int)(120 + t*50);
-                    int bv = (int)(155 + t*25);
+                    int rv = (int)(218 + t*18);
+                    int gv = (int)(105 + t*35);
+                    int bv = (int)(165 + t*30);
                     SDL_SetRenderDrawColor(rr,rv,gv,bv,255);
                     SDL_RenderDrawLine(rr,col,y1,col,y2);
                 }
@@ -215,7 +215,7 @@ static void drawMountains(SDL_Renderer* rr, int baseY, int w) {
             for (int dx = -18+dy; dx <= 18-dy; dx++) {
                 int px=cx+dx, py=cy+dy;
                 if (px>=0 && px<w) {
-                    SDL_SetRenderDrawColor(rr,255,240,245,180);
+                    SDL_SetRenderDrawColor(rr,255,245,252,180);
                     SDL_RenderDrawPoint(rr,px,py);
                 }
             }
@@ -245,10 +245,10 @@ static void drawGraph(SDL_Renderer* rr, TTF_Font* fSmall,
     double ySpan=yMaxV-yMinV; if (ySpan<1) ySpan=2;
     double yMin=yMinV-ySpan*0.18, yMax=yMaxV+ySpan*0.18;
 
-    drawPanel(rr,GX,GY,GW,GH,(SDL_Color){255,245,250,255},(SDL_Color){210,140,170,255});
+    drawPanel(rr,GX,GY,GW,GH,(SDL_Color){255,242,250,255},(SDL_Color){215,130,185,255});
 
     /* grid */
-    SDL_SetRenderDrawColor(rr,248,228,238,255);
+    SDL_SetRenderDrawColor(rr,248,225,242,255);
     for (int i=0;i<=10;i++) {
         SDL_RenderDrawLine(rr,GX+i*GW/10,GY,GX+i*GW/10,GY+GH);
         SDL_RenderDrawLine(rr,GX,GY+i*GH/10,GX+GW,GY+i*GH/10);
@@ -257,11 +257,11 @@ static void drawGraph(SDL_Renderer* rr, TTF_Font* fSmall,
     /* axes */
     int ox=GX+(int)((-xMin)/(xMax-xMin)*GW);
     int oy=GY+GH-(int)((-yMin)/(yMax-yMin)*GH);
-    SDL_SetRenderDrawColor(rr,140,60,100,255);
+    SDL_SetRenderDrawColor(rr,165,50,125,255);
     if (ox>=GX&&ox<=GX+GW) SDL_RenderDrawLine(rr,ox,GY,ox,GY+GH);
     if (oy>=GY&&oy<=GY+GH) SDL_RenderDrawLine(rr,GX,oy,GX+GW,oy);
-    renderText(rr,fSmall,"x",GX+GW-13,oy+4,(SDL_Color){140,60,100,255});
-    renderText(rr,fSmall,"y",ox+4,GY+4,(SDL_Color){140,60,100,255});
+    renderText(rr,fSmall,"x",GX+GW-13,oy+4,(SDL_Color){165,50,125,255});
+    renderText(rr,fSmall,"y",ox+4,GY+4,(SDL_Color){165,50,125,255});
 
     /* curve */
     int prevPx=-1, prevPy=-1;
@@ -270,7 +270,7 @@ static void drawGraph(SDL_Renderer* rr, TTF_Font* fSmall,
         double yv=feval(xv,a,b,c);
         int sy=GY+GH-(int)((yv-yMin)/(yMax-yMin)*GH);
         if (sy>=GY && sy<=GY+GH) {
-            SDL_SetRenderDrawColor(rr,180,40,90,255);
+            SDL_SetRenderDrawColor(rr,205,50,145,255);
             if (prevPx>=0 && abs(sy-prevPy)<GH/2) {
                 SDL_RenderDrawLine(rr,GX+prevPx,prevPy,GX+px,sy);
                 SDL_RenderDrawLine(rr,GX+prevPx,prevPy+1,GX+px,sy+1);
@@ -285,34 +285,34 @@ static void drawGraph(SDL_Renderer* rr, TTF_Font* fSmall,
         double rfy=feval(root,a,b,c);
         int rpy=GY+GH-(int)((rfy-yMin)/(yMax-yMin)*GH);
         if (rpx>=GX && rpx<=GX+GW) {
-            SDL_SetRenderDrawColor(rr,180,50,100,200);
+            SDL_SetRenderDrawColor(rr,200,50,140,200);
             for (int yy=GY;yy<=GY+GH;yy+=4) SDL_RenderDrawPoint(rr,rpx,yy);
             if (rpy>=GY && rpy<=GY+GH) {
                 for (int di=-5;di<=5;di++)
                     for (int dj=-5;dj<=5;dj++)
                         if (di*di+dj*dj<=25) {
-                            SDL_SetRenderDrawColor(rr,220,50,90,255);
+                            SDL_SetRenderDrawColor(rr,235,55,160,255);
                             SDL_RenderDrawPoint(rr,rpx+di,rpy+dj);
                         }
             }
             char lr[32]; sprintf(lr,"root ~ %.3f",root);
             int lw=textW(fSmall,lr), lx=rpx-lw/2;
             if (lx<GX) lx=GX; if (lx+lw>GX+GW) lx=GX+GW-lw;
-            renderText(rr,fSmall,lr,lx,GY+GH+6,(SDL_Color){180,40,90,255});
+            renderText(rr,fSmall,lr,lx,GY+GH+6,(SDL_Color){205,50,145,255});
         }
     }
 
     char rb[20];
-    sprintf(rb,"%.1f",xMin); renderText(rr,fSmall,rb,GX+2,oy+5,(SDL_Color){160,90,130,180});
-    sprintf(rb,"%.1f",xMax); renderText(rr,fSmall,rb,GX+GW-30,oy+5,(SDL_Color){160,90,130,180});
+    sprintf(rb,"%.1f",xMin); renderText(rr,fSmall,rb,GX+2,oy+5,(SDL_Color){185,100,165,180});
+    sprintf(rb,"%.1f",xMax); renderText(rr,fSmall,rb,GX+GW-30,oy+5,(SDL_Color){185,100,165,180});
 
     /* === hover crosshair & tooltip === */
     if (mouseX >= GX && mouseX <= GX+GW && mouseY >= GY && mouseY <= GY+GH) {
         SDL_Rect clipG = {GX, GY, GW, GH};
         SDL_RenderSetClipRect(rr, &clipG);
-        SDL_SetRenderDrawColor(rr, 110, 45, 85, 180);
+        SDL_SetRenderDrawColor(rr, 170,50,140, 180);
         SDL_RenderDrawLine(rr, mouseX, GY, mouseX, GY+GH);
-        SDL_SetRenderDrawColor(rr, 110, 45, 85, 110);
+        SDL_SetRenderDrawColor(rr, 170,50,140, 110);
         SDL_RenderDrawLine(rr, GX, mouseY, GX+GW, mouseY);
         SDL_RenderSetClipRect(rr, NULL);
         double hx = xMin + (double)(mouseX - GX) / GW * (xMax - xMin);
@@ -332,13 +332,13 @@ static void drawGraph(SDL_Renderer* rr, TTF_Font* fSmall,
         if (tx + tw > GX+GW) tx = mouseX - tw - 6;
         if (ty < GY) ty = GY + 4;
         SDL_SetRenderDrawBlendMode(rr, SDL_BLENDMODE_BLEND);
-        SDL_SetRenderDrawColor(rr, 255, 245, 250, 230);
+        SDL_SetRenderDrawColor(rr, 255, 242, 252, 230);
         SDL_Rect tipBg = {tx-2, ty-2, tw+4, 20};
         SDL_RenderFillRect(rr, &tipBg);
         SDL_SetRenderDrawBlendMode(rr, SDL_BLENDMODE_NONE);
-        SDL_SetRenderDrawColor(rr, 180, 60, 100, 255);
+        SDL_SetRenderDrawColor(rr, 205, 70, 165, 255);
         SDL_RenderDrawRect(rr, &tipBg);
-        renderText(rr, fSmall, htip, tx, ty, (SDL_Color){110, 20, 60, 255});
+        renderText(rr, fSmall, htip, tx, ty, (SDL_Color){130, 20, 100, 255});
     }
 }
 
@@ -355,13 +355,13 @@ int main(int argc, char* argv[]) {
         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     SDL_RenderSetLogicalSize(renderer, WIN_W, WIN_H);
 
-    TTF_Font* fHuge  = TTF_OpenFont("font.ttf", 36);
-    TTF_Font* fBig   = TTF_OpenFont("font.ttf", 28);
-    TTF_Font* fTitle = TTF_OpenFont("font.ttf", 24);
-    TTF_Font* fLarge = TTF_OpenFont("font.ttf", 20);
-    TTF_Font* fMed   = TTF_OpenFont("font.ttf", 17);
-    TTF_Font* fNorm  = TTF_OpenFont("font.ttf", 15);
-    TTF_Font* fSmall = TTF_OpenFont("font.ttf", 13);
+    TTF_Font* fHuge  = TTF_OpenFont("font.ttf", 40);
+    TTF_Font* fBig   = TTF_OpenFont("font.ttf", 32);
+    TTF_Font* fTitle = TTF_OpenFont("font.ttf", 27);
+    TTF_Font* fLarge = TTF_OpenFont("font.ttf", 23);
+    TTF_Font* fMed   = TTF_OpenFont("font.ttf", 20);
+    TTF_Font* fNorm  = TTF_OpenFont("font.ttf", 18);
+    TTF_Font* fSmall = TTF_OpenFont("font.ttf", 16);
 
     if (!fHuge||!fBig||!fTitle||!fLarge||!fMed||!fNorm||!fSmall) {
         printf("Font error: %s\n", TTF_GetError()); return 1;
@@ -592,8 +592,8 @@ int main(int argc, char* argv[]) {
         for (int i=0;i<WIN_H;i++) {
             float t=(float)i/WIN_H;
             int rv=(int)(255 - t*20);
-            int gv=(int)(225 - t*80);
-            int bv=(int)(240 - t*50);
+            int gv=(int)(215 - t*70);
+            int bv=(int)(235 - t*65);
             SDL_SetRenderDrawColor(renderer,rv,gv,bv,255);
             SDL_RenderDrawLine(renderer,0,i,WIN_W,i);
         }
@@ -602,18 +602,18 @@ int main(int argc, char* argv[]) {
         drawMountains(renderer, WIN_H - 60, WIN_W);
 
         /* ground fill at bottom */
-        SDL_SetRenderDrawColor(renderer,200,140,165,255);
+        SDL_SetRenderDrawColor(renderer,215,100,170,255);
         SDL_Rect ground = {0, WIN_H-60, WIN_W, 60};
         SDL_RenderFillRect(renderer,&ground);
 
         /* ===================== FRONT PAGE (screen 0) ===================== */
         if (screen == 0) {
             SDL_Color white = {255,255,255,255};
-            SDL_Color cream = {255,220,235,255};
+            SDL_Color cream = {255,215,240,255};
 
             /* decorative top stripe */
             for (int i=0;i<6;i++) {
-                SDL_SetRenderDrawColor(renderer,160,45,85,255);
+                SDL_SetRenderDrawColor(renderer,195,45,130,255);
                 SDL_RenderDrawLine(renderer,0,i,WIN_W,i);
             }
 
@@ -621,50 +621,50 @@ int main(int argc, char* argv[]) {
             int cw=700, ch=420;
             int cx=WIN_W/2-cw/2, cy=180;
             /* card shadow */
-            SDL_SetRenderDrawColor(renderer,160,100,130,60);
+            SDL_SetRenderDrawColor(renderer,185,90,150,60);
             SDL_Rect csh={cx+6,cy+6,cw,ch}; SDL_RenderFillRect(renderer,&csh);
             /* card bg */
-            drawPanel(renderer,cx,cy,cw,ch,(SDL_Color){255,245,252,245},(SDL_Color){210,140,170,255});
+            drawPanel(renderer,cx,cy,cw,ch,(SDL_Color){255,242,252,245},(SDL_Color){215,130,185,255});
 
             /* card header bar */
-            SDL_SetRenderDrawColor(renderer,160,45,85,255);
+            SDL_SetRenderDrawColor(renderer,195,45,130,255);
             SDL_Rect chbar={cx,cy,cw,50}; SDL_RenderFillRect(renderer,&chbar);
             renderCenterBold(renderer,fBig,"MT211 - NUMERICAL METHOD",WIN_W/2,cy+8,white);
 
             /* title */
-            renderCenterBold(renderer,fHuge,"FIXED POINT ITERATION",WIN_W/2,cy+72,(SDL_Color){140,30,70,255});
-            renderCenterBold(renderer,fTitle,"Quadratic Equation",WIN_W/2,cy+118,(SDL_Color){170,60,100,255});
-            renderCenter(renderer,fLarge,"f(x) = ax\xC2\xB2 + bx + c = 0",WIN_W/2,cy+152,(SDL_Color){130,50,85,255});
+            renderCenterBold(renderer,fHuge,"FIXED POINT ITERATION",WIN_W/2,cy+72,(SDL_Color){175,30,110,255});
+            renderCenterBold(renderer,fTitle,"Quadratic Equation",WIN_W/2,cy+118,(SDL_Color){210,60,150,255});
+            renderCenter(renderer,fLarge,"f(x) = ax\xC2\xB2 + bx + c = 0",WIN_W/2,cy+152,(SDL_Color){190,55,130,255});
 
             /* divider */
-            SDL_SetRenderDrawColor(renderer,220,160,190,255);
+            SDL_SetRenderDrawColor(renderer,230,145,195,255);
             SDL_RenderDrawLine(renderer,cx+60,cy+190,cx+cw-60,cy+190);
 
             /* section label */
-            renderCenter(renderer,fMed,"Semestral Project",WIN_W/2,cy+202,(SDL_Color){180,110,145,255});
+            renderCenter(renderer,fMed,"Semestral Project",WIN_W/2,cy+202,(SDL_Color){200,100,165,255});
 
             /* course */
-            renderCenterBold(renderer,fTitle,"BSCPE 22001",WIN_W/2,cy+232,(SDL_Color){160,45,85,255});
+            renderCenterBold(renderer,fTitle,"BSCPE 22001",WIN_W/2,cy+232,(SDL_Color){195,45,130,255});
 
             /* divider */
-            SDL_SetRenderDrawColor(renderer,220,160,190,255);
+            SDL_SetRenderDrawColor(renderer,230,145,195,255);
             SDL_RenderDrawLine(renderer,cx+120,cy+268,cx+cw-120,cy+268);
 
             /* authors label */
-            renderCenter(renderer,fMed,"Submitted By:",WIN_W/2,cy+278,(SDL_Color){180,110,145,255});
+            renderCenter(renderer,fMed,"Submitted By:",WIN_W/2,cy+278,(SDL_Color){200,100,165,255});
 
             /* authors */
-            renderCenterBold(renderer,fLarge,"Emmanuel Jr Porsona",WIN_W/2,cy+296,(SDL_Color){140,30,70,255});
-            renderCenterBold(renderer,fLarge,"Amit Jeed",WIN_W/2,cy+318,(SDL_Color){140,30,70,255});
+            renderCenterBold(renderer,fLarge,"Emmanuel Jr Porsona",WIN_W/2,cy+296,(SDL_Color){175,30,110,255});
+            renderCenterBold(renderer,fLarge,"Amit Jeed",WIN_W/2,cy+318,(SDL_Color){175,30,110,255});
 
             /* instructor divider */
-            SDL_SetRenderDrawColor(renderer,220,160,190,255);
+            SDL_SetRenderDrawColor(renderer,230,145,195,255);
             SDL_RenderDrawLine(renderer,cx+120,cy+342,cx+cw-120,cy+342);
-            renderCenter(renderer,fSmall,"Instructor:",WIN_W/2,cy+350,(SDL_Color){180,110,145,255});
-            renderCenterBold(renderer,fMed,"Engr. Edgar Broncano",WIN_W/2,cy+368,(SDL_Color){140,30,70,255});
+            renderCenter(renderer,fSmall,"Instructor:",WIN_W/2,cy+350,(SDL_Color){200,100,165,255});
+            renderCenterBold(renderer,fMed,"Engr. Edgar Broncano",WIN_W/2,cy+368,(SDL_Color){175,30,110,255});
 
             /* card bottom bar */
-            SDL_SetRenderDrawColor(renderer,160,45,85,255);
+            SDL_SetRenderDrawColor(renderer,195,45,130,255);
             SDL_Rect cbbar={cx,cy+ch-30,cw,30}; SDL_RenderFillRect(renderer,&cbbar);
             renderCenter(renderer,fSmall,"Bestlink College of the Philippines",WIN_W/2,cy+ch-22,cream);
 
@@ -672,7 +672,7 @@ int main(int argc, char* argv[]) {
             renderButton(renderer,fLarge,&btnStart);
 
             /* footer hint */
-            renderCenter(renderer,fSmall,"Click START to begin",WIN_W/2,WIN_H-85,(SDL_Color){180,120,150,200});
+            renderCenter(renderer,fSmall,"Click START to begin",WIN_W/2,WIN_H-85,(SDL_Color){195,100,170,200});
 
             SDL_RenderPresent(renderer);
             SDL_Delay(16);
@@ -682,7 +682,7 @@ int main(int argc, char* argv[]) {
         /* ================== LOADING SCREEN (screen 1) ================== */
         if (screen == 1) {
             SDL_Color white = {255,255,255,255};
-            SDL_Color cream = {255,220,235,255};
+            SDL_Color cream = {255,215,242,255};
             float dtime = (float)SDL_GetTicks() / 1000.0f;
 
             /* === DRONE (left side) === */
@@ -690,19 +690,19 @@ int main(int argc, char* argv[]) {
                 int dcx = 210, dcy = 210;
                 float rotAngle = dtime * 8.0f;
                 /* rotor arms */
-                SDL_SetRenderDrawColor(renderer,190,110,150,200);
+                SDL_SetRenderDrawColor(renderer,215,130,190,200);
                 SDL_RenderDrawLine(renderer,dcx-18,dcy,dcx-56,dcy-38);
                 SDL_RenderDrawLine(renderer,dcx+18,dcy,dcx+56,dcy-38);
                 SDL_RenderDrawLine(renderer,dcx-18,dcy,dcx-56,dcy+38);
                 SDL_RenderDrawLine(renderer,dcx+18,dcy,dcx+56,dcy+38);
                 /* body */
-                SDL_SetRenderDrawColor(renderer,210,130,165,220);
+                SDL_SetRenderDrawColor(renderer,235,140,200,220);
                 SDL_Rect dbody={dcx-18,dcy-11,36,22}; SDL_RenderFillRect(renderer,&dbody);
-                SDL_SetRenderDrawColor(renderer,180,80,120,200);
+                SDL_SetRenderDrawColor(renderer,200,85,165,200);
                 SDL_RenderDrawRect(renderer,&dbody);
                 /* center dot */
                 for(int di=-4;di<=4;di++) for(int dj=-4;dj<=4;dj++) if(di*di+dj*dj<=16) {
-                    SDL_SetRenderDrawColor(renderer,160,50,95,220);
+                    SDL_SetRenderDrawColor(renderer,185,50,145,220);
                     SDL_RenderDrawPoint(renderer,dcx+di,dcy+dj);
                 }
                 /* 4 spinning rotors */
@@ -712,59 +712,59 @@ int main(int argc, char* argv[]) {
                     for (int ai=0;ai<24;ai++) {
                         float a2 = rotAngle + ai*(3.14159f*2/24);
                         int px2=(int)(rx+26*cos(a2)), py2=(int)(ry+7*sin(a2));
-                        SDL_SetRenderDrawColor(renderer,210,140,175,180);
+                        SDL_SetRenderDrawColor(renderer,235,160,210,180);
                         SDL_RenderDrawPoint(renderer,px2,py2);
                     }
                     /* rotor hub */
-                    SDL_SetRenderDrawColor(renderer,180,80,120,200);
+                    SDL_SetRenderDrawColor(renderer,200,85,165,200);
                     for(int di=-3;di<=3;di++) for(int dj=-3;dj<=3;dj++) if(di*di+dj*dj<=9)
                         SDL_RenderDrawPoint(renderer,rx+di,ry+dj);
                 }
                 /* downward signal lines */
-                SDL_SetRenderDrawColor(renderer,210,150,180,120);
+                SDL_SetRenderDrawColor(renderer,235,160,215,120);
                 for(int li=0;li<3;li++) {
                     int sep=(li+1)*12;
                     SDL_RenderDrawLine(renderer,dcx-sep,dcy+14,dcx-sep,dcy+28+li*6);
                     SDL_RenderDrawLine(renderer,dcx+sep,dcy+14,dcx+sep,dcy+28+li*6);
                 }
                 /* label */
-                renderText(renderer,fSmall,"DRONE",dcx-20,dcy+72,(SDL_Color){180,100,140,180});
+                renderText(renderer,fSmall,"DRONE",dcx-20,dcy+72,(SDL_Color){200,100,175,180});
             }
 
             /* === DRONE 2 (top right) === */
             {
                 int dcx=1390, dcy=180;
                 float rotAngle = -dtime * 10.0f;
-                SDL_SetRenderDrawColor(renderer,190,110,150,180);
+                SDL_SetRenderDrawColor(renderer,215,130,190,180);
                 SDL_RenderDrawLine(renderer,dcx-14,dcy,dcx-44,dcy-30);
                 SDL_RenderDrawLine(renderer,dcx+14,dcy,dcx+44,dcy-30);
                 SDL_RenderDrawLine(renderer,dcx-14,dcy,dcx-44,dcy+30);
                 SDL_RenderDrawLine(renderer,dcx+14,dcy,dcx+44,dcy+30);
-                SDL_SetRenderDrawColor(renderer,210,130,165,200);
+                SDL_SetRenderDrawColor(renderer,235,140,200,200);
                 SDL_Rect dbody2={dcx-14,dcy-9,28,18}; SDL_RenderFillRect(renderer,&dbody2);
-                SDL_SetRenderDrawColor(renderer,180,80,120,190); SDL_RenderDrawRect(renderer,&dbody2);
+                SDL_SetRenderDrawColor(renderer,200,85,165,190); SDL_RenderDrawRect(renderer,&dbody2);
                 int rpos2[4][2]={{dcx-44,dcy-30},{dcx+44,dcy-30},{dcx-44,dcy+30},{dcx+44,dcy+30}};
                 for(int ri=0;ri<4;ri++) {
                     int rx=rpos2[ri][0], ry=rpos2[ri][1];
                     for(int ai=0;ai<20;ai++) {
                         float a2=rotAngle+ai*(3.14159f*2/20);
-                        SDL_SetRenderDrawColor(renderer,210,140,175,160);
+                        SDL_SetRenderDrawColor(renderer,235,160,210,160);
                         SDL_RenderDrawPoint(renderer,(int)(rx+20*cos(a2)),(int)(ry+6*sin(a2)));
                     }
                 }
-                renderText(renderer,fSmall,"DRONE",dcx-18,dcy+50,(SDL_Color){180,100,140,160});
+                renderText(renderer,fSmall,"DRONE",dcx-18,dcy+50,(SDL_Color){200,100,175,160});
             }
 
             /* === ROBOT (right side) === */
             {
                 int rx=1380, ry=270;
-                SDL_Color rc={200,130,162,200};
-                SDL_Color rd={160,60,100,220};
+                SDL_Color rc={220,135,195,200};
+                SDL_Color rd={185,50,150,220};
                 /* antenna */
                 SDL_SetRenderDrawColor(renderer,rd.r,rd.g,rd.b,rd.a);
                 SDL_RenderDrawLine(renderer,rx+28,ry,rx+28,ry-28);
                 for(int di=-5;di<=5;di++) for(int dj=-5;dj<=5;dj++) if(di*di+dj*dj<=25) {
-                    SDL_SetRenderDrawColor(renderer,220,160,190,200);
+                    SDL_SetRenderDrawColor(renderer,245,185,225,200);
                     SDL_RenderDrawPoint(renderer,rx+28+di,ry-28+dj);
                 }
                 /* head */
@@ -772,13 +772,13 @@ int main(int argc, char* argv[]) {
                 SDL_Rect rhead={rx,ry,56,44}; SDL_RenderFillRect(renderer,&rhead);
                 SDL_SetRenderDrawColor(renderer,rd.r,rd.g,rd.b,rd.a); SDL_RenderDrawRect(renderer,&rhead);
                 /* eyes */
-                SDL_SetRenderDrawColor(renderer,240,200,220,240);
+                SDL_SetRenderDrawColor(renderer,245,210,240,240);
                 SDL_Rect leye={rx+10,ry+14,14,12}; SDL_RenderFillRect(renderer,&leye);
                 SDL_Rect reye={rx+32,ry+14,14,12}; SDL_RenderFillRect(renderer,&reye);
                 /* pupils — animated blink */
                 int blink=(int)(dtime*2)%4; /* blink every 2s */
                 if(blink!=3) {
-                    SDL_SetRenderDrawColor(renderer,160,50,90,255);
+                    SDL_SetRenderDrawColor(renderer,185,50,145,255);
                     SDL_Rect lp={rx+14,ry+17,6,7}; SDL_RenderFillRect(renderer,&lp);
                     SDL_Rect rp={rx+36,ry+17,6,7}; SDL_RenderFillRect(renderer,&rp);
                 }
@@ -794,12 +794,12 @@ int main(int argc, char* argv[]) {
                 SDL_Rect rbody={rx-8,ry+54,72,80}; SDL_RenderFillRect(renderer,&rbody);
                 SDL_SetRenderDrawColor(renderer,rd.r,rd.g,rd.b,rd.a); SDL_RenderDrawRect(renderer,&rbody);
                 /* chest panel */
-                SDL_SetRenderDrawColor(renderer,240,200,220,160);
+                SDL_SetRenderDrawColor(renderer,245,210,240,160);
                 SDL_Rect chest={rx+4,ry+60,44,30}; SDL_RenderFillRect(renderer,&chest);
                 /* chest LED strip */
                 for(int led=0;led<5;led++) {
                     int ledOn=(int)(dtime*5+led)%5==0;
-                    SDL_SetRenderDrawColor(renderer,ledOn?255:180,ledOn?120:80,ledOn?160:120,200);
+                    SDL_SetRenderDrawColor(renderer,ledOn?255:200,ledOn?120:90,ledOn?195:165,200);
                     SDL_Rect ledR={rx+8+led*8,ry+68,5,5}; SDL_RenderFillRect(renderer,&ledR);
                 }
                 /* arms */
@@ -824,7 +824,7 @@ int main(int argc, char* argv[]) {
             }
 
             /* === Circuit trace decorations === */
-            SDL_SetRenderDrawColor(renderer,210,160,185,100);
+            SDL_SetRenderDrawColor(renderer,220,145,200,100);
             /* left traces */
             SDL_RenderDrawLine(renderer,30,120,30,820); /* vertical rail */
             SDL_RenderDrawLine(renderer,30,180,120,180);
@@ -838,7 +838,7 @@ int main(int argc, char* argv[]) {
             int jpts[][2]={{30,180},{30,350},{30,500},{WIN_W-30,240},{WIN_W-30,440}};
             for(int ji=0;ji<5;ji++) {
                 for(int di=-3;di<=3;di++) for(int dj=-3;dj<=3;dj++) if(di*di+dj*dj<=9) {
-                    SDL_SetRenderDrawColor(renderer,200,120,160,160);
+                    SDL_SetRenderDrawColor(renderer,215,115,185,160);
                     SDL_RenderDrawPoint(renderer,jpts[ji][0]+di,jpts[ji][1]+dj);
                 }
             }
@@ -873,7 +873,7 @@ int main(int argc, char* argv[]) {
             /* spotlight glow under each dancer */
             SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
             for(int gs=0;gs<40;gs++) {
-                SDL_SetRenderDrawColor(renderer,230,150,200,(Uint8)(18-gs/3));
+                SDL_SetRenderDrawColor(renderer,240,155,210,(Uint8)(18-gs/3));
                 SDL_Rect gl1={350-60+gs,700,120-gs*2,20}; SDL_RenderFillRect(renderer,&gl1);
                 SDL_Rect gl2={1240-60+gs,700,120-gs*2,20}; SDL_RenderFillRect(renderer,&gl2);
             }
@@ -1113,29 +1113,29 @@ int main(int argc, char* argv[]) {
             /* pulsing title */
             float pulse = 0.5f + 0.5f * (float)sin((double)SDL_GetTicks() / 400.0);
             int titleAlpha = (int)(180 + pulse * 75);
-            SDL_Color titleCol = {(Uint8)(140 + (int)(pulse*30)), 30, 70, (Uint8)titleAlpha};
+            SDL_Color titleCol = {(Uint8)(185+pulse*25), 45, 135, (Uint8)titleAlpha};
             renderCenterBold(renderer,fHuge,"FIXED POINT ITERATION",WIN_W/2,280,titleCol);
-            renderCenter(renderer,fTitle,"Quadratic Equation  |  ax\xC2\xB2 + bx + c = 0",WIN_W/2,330,(SDL_Color){170,60,100,255});
+            renderCenter(renderer,fTitle,"Quadratic Equation  |  ax\xC2\xB2 + bx + c = 0",WIN_W/2,330,(SDL_Color){210,60,155,255});
 
             /* loading text */
             const char* loadLabels[] = {"Initializing...","Loading modules...","Preparing solver...","Almost ready...","Launching!"};
             int labelIdx = (int)(loadProgress * 4.99f);
             if (labelIdx > 4) labelIdx = 4;
-            renderCenter(renderer,fLarge,loadLabels[labelIdx],WIN_W/2,420,(SDL_Color){160,45,85,255});
+            renderCenter(renderer,fLarge,loadLabels[labelIdx],WIN_W/2,420,(SDL_Color){195,45,130,255});
 
             /* progress bar track */
             int barW=500, barH=22;
             int barX=WIN_W/2-barW/2, barY=470;
-            drawPanel(renderer,barX,barY,barW,barH,(SDL_Color){255,230,240,255},(SDL_Color){210,140,170,255});
+            drawPanel(renderer,barX,barY,barW,barH,(SDL_Color){255,230,248,255},(SDL_Color){215,130,185,255});
 
             /* progress bar fill — gradient */
             int fillW = (int)(loadProgress * (barW - 4));
             if (fillW > 0) {
                 for (int px=0; px<fillW; px++) {
                     float t = (float)px / (barW - 4);
-                    int rv = (int)(200 - t*60);
-                    int gv = (int)(60  + t*20);
-                    int bv = (int)(110 + t*10);
+                    int rv = (int)(210 - t*30);
+                    int gv = (int)(55  + t*20);
+                    int bv = (int)(155 + t*20);
                     SDL_SetRenderDrawColor(renderer,rv,gv,bv,255);
                     SDL_RenderDrawLine(renderer,barX+2+px,barY+2,barX+2+px,barY+barH-3);
                 }
@@ -1144,7 +1144,7 @@ int main(int argc, char* argv[]) {
             /* percentage */
             char pctBuf[16];
             sprintf(pctBuf,"%d%%",(int)(loadProgress*100));
-            renderCenterBold(renderer,fNorm,pctBuf,WIN_W/2,barY+barH+8,(SDL_Color){160,45,85,255});
+            renderCenterBold(renderer,fNorm,pctBuf,WIN_W/2,barY+barH+8,(SDL_Color){195,45,130,255});
 
             /* authors at bottom */
             renderCenter(renderer,fNorm,"BSCPE 22001  |  Emmanuel Jr Porsona  |  Amit Jeed",WIN_W/2,560,cream);
@@ -1160,7 +1160,7 @@ int main(int argc, char* argv[]) {
                     int alpha = (int)(100 + 155 * (0.5f + 0.5f * (float)sin(a2 - angle)));
                     for (int di=-3;di<=3;di++) for (int dj=-3;dj<=3;dj++)
                         if (di*di+dj*dj<=9) {
-                            SDL_SetRenderDrawColor(renderer,180,50,100,(Uint8)alpha);
+                            SDL_SetRenderDrawColor(renderer,215,50,155,(Uint8)alpha);
                             SDL_RenderDrawPoint(renderer,dx+di,dy+dj);
                         }
                 }
@@ -1174,13 +1174,13 @@ int main(int argc, char* argv[]) {
         /* =================== SOLVER PAGE (screen 2) =================== */
         /* ——— Header bar ——— */
         SDL_Color white = {255,255,255,255};
-        SDL_Color cream = {255,220,235,255};
+        SDL_Color cream = {255,215,242,255};
 
         for (int i=0;i<80;i++) {
             float t=(float)i/80.0f;
-            int rv=(int)(170 - t*40);
-            int gv=(int)(50  + t*30);
-            int bv=(int)(90  + t*20);
+            int rv=(int)(200 - t*30);
+            int gv=(int)(45  + t*20);
+            int bv=(int)(130 + t*20);
             SDL_SetRenderDrawColor(renderer,rv,gv,bv,255);
             SDL_RenderDrawLine(renderer,0,i,WIN_W,i);
         }
@@ -1193,18 +1193,18 @@ int main(int argc, char* argv[]) {
         renderButton(renderer,fSmall,&btnBack);
 
         /* ===== LEFT PANEL: INPUT ===== */
-        SDL_Color panelBg  = {255,248,252,240};
-        SDL_Color panBdr   = {220,160,190,255};
-        SDL_Color eqBg     = {255,240,248,240};
-        SDL_Color eqBdr    = {210,150,180,255};
-        SDL_Color secCol   = {140,40,85,255};
-        SDL_Color darkTxt  = {100,20,60,255};
-        SDL_Color hintCol  = {180,110,145,255};
+        SDL_Color panelBg  = {255,242,252,240};
+        SDL_Color panBdr   = {215,130,185,255};
+        SDL_Color eqBg     = {255,238,250,240};
+        SDL_Color eqBdr    = {210,130,180,255};
+        SDL_Color secCol   = {185,45,120,255};
+        SDL_Color darkTxt  = {120,25,85,255};
+        SDL_Color hintCol  = {190,100,165,255};
 
         drawPanel(renderer,14,90,490,838,panelBg,panBdr);
 
         /* title bar */
-        SDL_SetRenderDrawColor(renderer,160,45,85,255);
+        SDL_SetRenderDrawColor(renderer,195,45,130,255);
         SDL_Rect ptbar={14,90,490,30}; SDL_RenderFillRect(renderer,&ptbar);
         renderBold(renderer,fLarge,"INPUT",22,95,white);
         renderText(renderer,fNorm,"Coefficients  +  Initial Guess  +  g(x)",130,97,cream);
@@ -1212,11 +1212,11 @@ int main(int argc, char* argv[]) {
         /* equation display */
         drawPanel(renderer,28,130,462,45,eqBg,eqBdr);
         renderText(renderer,fSmall,"Equation to solve:",40,134,hintCol);
-        renderBold(renderer,fMed,"f(x) = ax\xC2\xB2 + bx + c = 0",40,151,(SDL_Color){160,40,85,255});
+        renderBold(renderer,fMed,"f(x) = ax\xC2\xB2 + bx + c = 0",40,151,(SDL_Color){195,45,120,255});
 
         /* coefficient inputs */
         drawPanel(renderer,28,183,462,85,eqBg,eqBdr);
-        SDL_SetRenderDrawColor(renderer,160,45,85,255);
+        SDL_SetRenderDrawColor(renderer,195,45,130,255);
         SDL_Rect chdr={28,183,462,22}; SDL_RenderFillRect(renderer,&chdr);
         renderBold(renderer,fNorm,"STEP 1 \xe2\x80\x94 Enter coefficients & initial guess",36,186,white);
 
@@ -1228,7 +1228,7 @@ int main(int argc, char* argv[]) {
 
         /* method selection */
         drawPanel(renderer,28,278,462,200,eqBg,eqBdr);
-        SDL_SetRenderDrawColor(renderer,160,45,85,255);
+        SDL_SetRenderDrawColor(renderer,195,45,130,255);
         SDL_Rect mhdr={28,278,462,22}; SDL_RenderFillRect(renderer,&mhdr);
         renderBold(renderer,fNorm,"STEP 2 \xe2\x80\x94 Select g(x) transformation",36,281,white);
         renderText(renderer,fSmall,"Choose the form that fits your equation:",42,306,hintCol);
@@ -1237,18 +1237,18 @@ int main(int argc, char* argv[]) {
             methods[i].rect = (SDL_Rect){42, 326 + i*30, 430, 26};
 
             if (methods[i].selected) {
-                SDL_SetRenderDrawColor(renderer,255,215,228,255);
+                SDL_SetRenderDrawColor(renderer,255,210,238,255);
             } else if (methods[i].hovered) {
-                SDL_SetRenderDrawColor(renderer,255,235,242,255);
+                SDL_SetRenderDrawColor(renderer,255,232,248,255);
             } else {
-                SDL_SetRenderDrawColor(renderer,255,248,252,255);
+                SDL_SetRenderDrawColor(renderer,255,245,253,255);
             }
             SDL_RenderFillRect(renderer,&methods[i].rect);
 
             SDL_SetRenderDrawColor(renderer,
-                methods[i].selected?190:210,
-                methods[i].selected?70:160,
-                methods[i].selected?120:180,255);
+                methods[i].selected?200:215,
+                methods[i].selected?65:130,
+                methods[i].selected?150:185,255);
             SDL_RenderDrawRect(renderer,&methods[i].rect);
 
             /* radio indicator */
@@ -1256,18 +1256,18 @@ int main(int argc, char* argv[]) {
             int circY = methods[i].rect.y + 13;
             for (int di=-5;di<=5;di++) for (int dj=-5;dj<=5;dj++)
                 if (di*di+dj*dj<=25) {
-                    SDL_SetRenderDrawColor(renderer,210,150,175,255);
+                    SDL_SetRenderDrawColor(renderer,215,130,185,255);
                     SDL_RenderDrawPoint(renderer,circX+di,circY+dj);
                 }
             if (methods[i].selected) {
                 for (int di=-3;di<=3;di++) for (int dj=-3;dj<=3;dj++)
                     if (di*di+dj*dj<=9) {
-                        SDL_SetRenderDrawColor(renderer,180,40,90,255);
+                        SDL_SetRenderDrawColor(renderer,210,50,155,255);
                         SDL_RenderDrawPoint(renderer,circX+di,circY+dj);
                     }
             }
 
-            SDL_Color mc = methods[i].selected?(SDL_Color){140,30,70,255}:(SDL_Color){100,60,80,255};
+            SDL_Color mc = methods[i].selected?(SDL_Color){175,30,120,255}:(SDL_Color){150,60,120,255};
             renderText(renderer,fSmall,methods[i].formula,methods[i].rect.x+22,methods[i].rect.y+5,mc);
         }
 
@@ -1277,13 +1277,13 @@ int main(int argc, char* argv[]) {
             double pA=atof(inputs[0].value),pB=atof(inputs[1].value),pC=atof(inputs[2].value);
             char prev[128];
             sprintf(prev,"Preview:  f(x) = %.3gx\xC2\xB2 %+.3gx %+.3g",pA,pB,pC);
-            renderBold(renderer,fSmall,prev,40,492,(SDL_Color){160,40,85,255});
+            renderBold(renderer,fSmall,prev,40,492,(SDL_Color){195,45,120,255});
         }
 
         /* algorithm reminder */
         drawPanel(renderer,28,522,462,76,eqBg,eqBdr);
         renderText(renderer,fSmall,"Algorithm:",40,526,hintCol);
-        renderBold(renderer,fSmall,"1. Start with initial guess x0",40,542,(SDL_Color){140,40,85,255});
+        renderBold(renderer,fSmall,"1. Start with initial guess x0",40,542,(SDL_Color){185,45,120,255});
         renderText(renderer,fSmall,"2. Compute xn+1 = g(xn)",40,558,darkTxt);
         renderText(renderer,fSmall,"3. Repeat until |xn+1 - xn| < tolerance",40,574,darkTxt);
 
@@ -1295,8 +1295,8 @@ int main(int argc, char* argv[]) {
         if (strlen(resultText)>0) {
             int isOk = hasValidRoot;
             drawPanel(renderer,28,675,462,80,
-                isOk?(SDL_Color){255,235,240,255}:(SDL_Color){255,228,230,255},
-                isOk?(SDL_Color){180,100,140,255}:(SDL_Color){210,80,100,255});
+                isOk?(SDL_Color){255,235,250,255}:(SDL_Color){255,228,230,255},
+                isOk?(SDL_Color){200,120,180,255}:(SDL_Color){210,80,100,255});
             renderBold(renderer,fSmall,isOk?"STATUS: SUCCESS":"STATUS: FAILED",
                        40,679,isOk?(SDL_Color){60,130,80,255}:(SDL_Color){180,20,30,255});
             char resultCopy[500]; strcpy(resultCopy,resultText);
@@ -1304,23 +1304,23 @@ int main(int argc, char* argv[]) {
             int ry=695;
             while (line) {
                 renderText(renderer,fSmall,line,40,ry,
-                    isOk?(SDL_Color){80,40,60,255}:(SDL_Color){160,30,40,255});
+                    isOk?(SDL_Color){120,30,90,255}:(SDL_Color){160,30,40,255});
                 ry+=15; line=strtok(NULL,"\n");
             }
         }
 
         /* conclusion panel */
         if (hasValidRoot) {
-            drawPanel(renderer,28,740,462,92,(SDL_Color){255,230,240,255},(SDL_Color){200,100,150,255});
-            SDL_SetRenderDrawColor(renderer,160,45,85,255);
+            drawPanel(renderer,28,740,462,92,(SDL_Color){255,228,250,255},(SDL_Color){210,115,180,255});
+            SDL_SetRenderDrawColor(renderer,195,45,130,255);
             SDL_Rect cbdr={28,740,462,24}; SDL_RenderFillRect(renderer,&cbdr);
             renderBold(renderer,fLarge,"RESULT",200,744,white);
 
             char buf[200];
             formatEquation(buf,(int)coefA,(int)coefB,(int)coefC);
-            renderBold(renderer,fNorm,buf,44,770,(SDL_Color){140,30,70,255});
+            renderBold(renderer,fNorm,buf,44,770,(SDL_Color){175,30,120,255});
             sprintf(buf,"Root: x \xe2\x89\x88 %.3lf", finalRoot);
-            renderBold(renderer,fNorm,buf,44,790,(SDL_Color){160,40,85,255});
+            renderBold(renderer,fNorm,buf,44,790,(SDL_Color){195,50,140,255});
             sprintf(buf,"Iterations: %d   |   Tolerance: %.3lf",totalIterations,TOLERANCE);
             renderText(renderer,fSmall,buf,44,812,hintCol);
         }
@@ -1328,7 +1328,7 @@ int main(int argc, char* argv[]) {
         /* ===== MIDDLE PANEL: ITERATION TABLE ===== */
         drawPanel(renderer,516,90,570,838,panelBg,panBdr);
 
-        SDL_SetRenderDrawColor(renderer,160,45,85,255);
+        SDL_SetRenderDrawColor(renderer,195,45,130,255);
         SDL_Rect stbar={516,90,570,30}; SDL_RenderFillRect(renderer,&stbar);
         renderBold(renderer,fLarge,"ITERATION TABLE",570,95,white);
 
@@ -1361,7 +1361,7 @@ int main(int argc, char* argv[]) {
             SDL_RenderDrawLine(renderer,544,sy+20,1060,sy+20);
 
             /* column headers */
-            SDL_SetRenderDrawColor(renderer,160,45,85,255);
+            SDL_SetRenderDrawColor(renderer,195,45,130,255);
             SDL_Rect hdrBg={531,sy+22,540,18}; SDL_RenderFillRect(renderer,&hdrBg);
             renderBold(renderer,fSmall,"n",   544,sy+23,white);
             renderBold(renderer,fSmall,"xn",580,sy+23,white);
@@ -1414,7 +1414,7 @@ int main(int argc, char* argv[]) {
                 int sbH=(int)((float)maxVis/totalIterations*(dispH-46));
                 if (sbH<20) sbH=20;
                 int sbY=sy+40+(int)((float)tableScrollOffset/maxScr*(dispH-46-sbH));
-                SDL_SetRenderDrawColor(renderer,200,120,160,200);
+                SDL_SetRenderDrawColor(renderer,215,100,180,200);
                 SDL_Rect scrollBar={1066,sbY,6,sbH};
                 SDL_RenderFillRect(renderer,&scrollBar);
             }
@@ -1444,7 +1444,7 @@ int main(int argc, char* argv[]) {
                          516+570/2,py,hintCol);
             renderCenter(renderer,fNorm,"then press COMPUTE to see iterations.",
                          516+570/2,py+24,hintCol);
-            SDL_SetRenderDrawColor(renderer,220,170,190,200);
+            SDL_SetRenderDrawColor(renderer,220,145,200,200);
             SDL_RenderDrawLine(renderer,560,py+58,1060,py+58);
             renderCenter(renderer,fSmall,"Example: a=1, b=-3, c=-4, x0=0",
                          516+570/2,py+70,hintCol);
@@ -1453,7 +1453,7 @@ int main(int argc, char* argv[]) {
         /* ===== RIGHT PANEL: GRAPH ===== */
         drawPanel(renderer,1098,90,488,838,panelBg,panBdr);
 
-        SDL_SetRenderDrawColor(renderer,160,45,85,255);
+        SDL_SetRenderDrawColor(renderer,195,45,130,255);
         SDL_Rect gpbar={1098,90,488,30}; SDL_RenderFillRect(renderer,&gpbar);
         renderBold(renderer,fLarge,"GRAPH",1300,95,white);
 
@@ -1467,35 +1467,35 @@ int main(int argc, char* argv[]) {
         /* legend */
         int LY=620;
         drawPanel(renderer,1110,LY,462,90,eqBg,eqBdr);
-        SDL_SetRenderDrawColor(renderer,160,45,85,255);
+        SDL_SetRenderDrawColor(renderer,195,45,130,255);
         SDL_Rect lhdr={1110,LY,462,22}; SDL_RenderFillRect(renderer,&lhdr);
         renderBold(renderer,fNorm,"LEGEND",1300,LY+4,white);
 
-        SDL_SetRenderDrawColor(renderer,180,40,90,255);
+        SDL_SetRenderDrawColor(renderer,205,50,145,255);
         SDL_Rect l1={1125,LY+36,28,3}; SDL_RenderFillRect(renderer,&l1);
-        renderText(renderer,fNorm,"f(x) curve",1163,LY+29,(SDL_Color){180,40,90,255});
+        renderText(renderer,fNorm,"f(x) curve",1163,LY+29,(SDL_Color){205,50,145,255});
 
         for (int di=-4;di<=4;di++) for (int dj=-4;dj<=4;dj++)
             if (di*di+dj*dj<=16) {
-                SDL_SetRenderDrawColor(renderer,220,50,90,255);
+                SDL_SetRenderDrawColor(renderer,235,55,160,255);
                 SDL_RenderDrawPoint(renderer,1137+di,LY+58+dj);
             }
-        renderText(renderer,fNorm,"Root marker",1163,LY+51,(SDL_Color){220,50,90,255});
+        renderText(renderer,fNorm,"Root marker",1163,LY+51,(SDL_Color){235,55,160,255});
 
-        SDL_SetRenderDrawColor(renderer,140,60,100,255);
+        SDL_SetRenderDrawColor(renderer,165,50,125,255);
         SDL_RenderDrawLine(renderer,1125,LY+75,1153,LY+75);
-        renderText(renderer,fNorm,"Axes",1163,LY+68,(SDL_Color){140,60,100,255});
+        renderText(renderer,fNorm,"Axes",1163,LY+68,(SDL_Color){165,50,125,255});
 
         /* footer text in ground area */
         renderCenter(renderer,fSmall,
             "MT211 Numerical Method  |  BSCPE 22001  |  Fixed Point Iteration",
-            WIN_W/2, WIN_H-30, (SDL_Color){255,230,240,200});
+            WIN_W/2, WIN_H-30, (SDL_Color){255,225,248,200});
 
         /* ============= CONFIRMATION MODAL OVERLAY ============= */
         if (showConfirm) {
             /* dim overlay */
             SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-            SDL_SetRenderDrawColor(renderer, 60, 10, 30, 180);
+            SDL_SetRenderDrawColor(renderer, 60, 10, 40, 180);
             SDL_Rect overlay = {0, 0, WIN_W, WIN_H};
             SDL_RenderFillRect(renderer, &overlay);
             SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
@@ -1504,20 +1504,20 @@ int main(int argc, char* argv[]) {
             int mw=620, mh=310;
             int mx2=WIN_W/2-mw/2, my2=WIN_H/2-mh/2;
             /* shadow */
-            SDL_SetRenderDrawColor(renderer,40,10,20,255);
+            SDL_SetRenderDrawColor(renderer,40,10,30,255);
             SDL_Rect mshadow={mx2+6,my2+6,mw,mh}; SDL_RenderFillRect(renderer,&mshadow);
-            drawPanel(renderer,mx2,my2,mw,mh,(SDL_Color){255,245,252,255},(SDL_Color){210,140,170,255});
+            drawPanel(renderer,mx2,my2,mw,mh,(SDL_Color){255,242,252,255},(SDL_Color){215,130,185,255});
 
             /* card header */
-            SDL_SetRenderDrawColor(renderer,160,45,85,255);
+            SDL_SetRenderDrawColor(renderer,195,45,130,255);
             SDL_Rect mhbar={mx2,my2,mw,46}; SDL_RenderFillRect(renderer,&mhbar);
             renderCenterBold(renderer,fTitle,"CONFIRM COMPUTATION",WIN_W/2,my2+8,white);
 
             /* question */
-            renderCenterBold(renderer,fLarge,"Are you sure you want to compute?",WIN_W/2,my2+64,(SDL_Color){140,30,70,255});
+            renderCenterBold(renderer,fLarge,"Are you sure you want to compute?",WIN_W/2,my2+64,(SDL_Color){175,30,120,255});
 
             /* divider */
-            SDL_SetRenderDrawColor(renderer,220,160,190,255);
+            SDL_SetRenderDrawColor(renderer,225,140,195,255);
             SDL_RenderDrawLine(renderer,mx2+40,my2+96,mx2+mw-40,my2+96);
 
             /* equation display */
@@ -1527,22 +1527,22 @@ int main(int argc, char* argv[]) {
                 double pC=atof(inputs[2].value);
                 char eqbuf[150];
                 sprintf(eqbuf,"f(x)  =  %.4gx\xC2\xB2  %+.4gx  %+.4g  =  0", pA, pB, pC);
-                renderCenter(renderer,fMed,eqbuf,WIN_W/2,my2+108,(SDL_Color){100,20,60,255});
+                renderCenter(renderer,fMed,eqbuf,WIN_W/2,my2+108,(SDL_Color){130,25,100,255});
             }
 
             /* selected g(x) */
-            renderCenter(renderer,fSmall,"Selected transformation:",WIN_W/2,my2+140,(SDL_Color){180,110,145,255});
-            renderCenterBold(renderer,fMed,methods[selectedMethod-1].formula,WIN_W/2,my2+162,(SDL_Color){160,45,85,255});
+            renderCenter(renderer,fSmall,"Selected transformation:",WIN_W/2,my2+140,(SDL_Color){190,100,165,255});
+            renderCenterBold(renderer,fMed,methods[selectedMethod-1].formula,WIN_W/2,my2+162,(SDL_Color){195,45,130,255});
 
             /* initial guess */
             {
                 char x0buf[60];
                 sprintf(x0buf,"Initial guess:  x0 = %s", inputs[3].value);
-                renderCenter(renderer,fSmall,x0buf,WIN_W/2,my2+196,(SDL_Color){130,60,90,255});
+                renderCenter(renderer,fSmall,x0buf,WIN_W/2,my2+196,(SDL_Color){175,75,145,255});
             }
 
             /* divider */
-            SDL_SetRenderDrawColor(renderer,220,160,190,255);
+            SDL_SetRenderDrawColor(renderer,225,140,195,255);
             SDL_RenderDrawLine(renderer,mx2+40,my2+222,mx2+mw-40,my2+222);
 
             /* reposition confirm buttons to center on this card */
