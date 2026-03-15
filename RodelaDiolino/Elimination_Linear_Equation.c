@@ -333,8 +333,9 @@ int main(int argc, char* argv[]) {
 
     SDL_Window* window = SDL_CreateWindow("Gaussian Elimination - 2 Variables",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+        1280, 720, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_RenderSetLogicalSize(renderer, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     /* Fonts */
     TTF_Font* font      = TTF_OpenFont("font.ttf", 18);
