@@ -931,10 +931,10 @@ int main(int argc, char* argv[]) {
             renderBold(renderer, fTitle, "SUBSTITUTION METHOD", 30, 14, white);
             renderText(renderer, fLarge, "Non-Linear Equations  |  2 Unknowns", 30, 46, cream);
             renderText(renderer, fSmall, "MT221 - Numerical Methods  |  Semestral Project",
-                       1030, 10, cream);
-            renderText(renderer, fNorm,  "BSCPE 22003", 1195, 32, white);
+                       880, 10, cream);
+            renderText(renderer, fNorm,  "BSCPE 22003", 880, 32, white);
             renderText(renderer, fSmall, "Soriano, Gilbert  |  Fulla, John Micheal",
-                       1115, 54, cream);
+                       880, 54, cream);
             btnSolverBack.rect = (SDL_Rect){WIN_W-200, 16, 170, 44};
             renderButton(renderer, fNorm, &btnSolverBack);
 
@@ -1061,41 +1061,41 @@ int main(int argc, char* argv[]) {
                 int sy = 125;
                 char sbuf[200];
 
-                drawPanel(renderer, 534, sy, 526, 75, (SDL_Color){225,248,246,255}, eqBdr);
+                drawPanel(renderer, 534, sy, 526, 80, (SDL_Color){225,248,246,255}, eqBdr);
                 renderBold(renderer, fMed, "GIVEN: System of Equations", 548, sy+5, secCol);
                 SDL_SetRenderDrawColor(renderer, eqBdr.r,eqBdr.g,eqBdr.b,255);
                 SDL_RenderDrawLine(renderer, 548, sy+25, 1050, sy+25);
                 sprintf(sbuf,"Eq1:  %.0fx^%d + %.0fy^%d = %.0f", sA1,sn1,sB1,sn2,sC1);
                 renderText(renderer,fNorm,sbuf,558,sy+30,(SDL_Color){0,140,130,255});
                 sprintf(sbuf,"Eq2:  %.0fx^%d + %.0fy^%d = %.0f", sA2,sm1,sB2,sm2,sC2);
-                renderText(renderer,fNorm,sbuf,558,sy+50,(SDL_Color){200,110,0,255});
-                sy += 85;
+                renderText(renderer,fNorm,sbuf,558,sy+54,(SDL_Color){200,110,0,255});
+                sy += 88;
 
-                drawPanel(renderer, 534, sy, 526, 90, (SDL_Color){230,252,248,255}, eqBdr);
+                drawPanel(renderer, 534, sy, 526, 100, (SDL_Color){230,252,248,255}, eqBdr);
                 renderBold(renderer,fMed,"STEP 1: Isolate x from Equation 1",548,sy+5,secCol);
                 SDL_SetRenderDrawColor(renderer,eqBdr.r,eqBdr.g,eqBdr.b,255);
                 SDL_RenderDrawLine(renderer,548,sy+25,1050,sy+25);
                 sprintf(sbuf,"%.0fx^%d = %.0f - %.0fy^%d", sA1,sn1,sC1,sB1,sn2);
                 renderText(renderer,fNorm,sbuf,558,sy+30,darkTxt);
                 sprintf(sbuf,"x^%d = (%.0f - %.0fy^%d) / %.0f", sn1,sC1,sB1,sn2,sA1);
-                renderText(renderer,fNorm,sbuf,558,sy+50,darkTxt);
+                renderText(renderer,fNorm,sbuf,558,sy+54,darkTxt);
                 sprintf(sbuf,"x = [(%.0f - %.0fy^%d) / %.0f]^(1/%d)",
                         sC1,sB1,sn2,sA1,sn1);
-                renderBold(renderer,fSmall,sbuf,558,sy+70,(SDL_Color){0,120,112,255});
-                sy += 100;
+                renderBold(renderer,fSmall,sbuf,558,sy+78,(SDL_Color){0,120,112,255});
+                sy += 108;
 
-                drawPanel(renderer,534,sy,526,90,(SDL_Color){230,248,244,255},eqBdr);
+                drawPanel(renderer,534,sy,526,100,(SDL_Color){230,248,244,255},eqBdr);
                 renderBold(renderer,fMed,"STEP 2: Substitute x into Equation 2",548,sy+5,secCol);
                 SDL_SetRenderDrawColor(renderer,eqBdr.r,eqBdr.g,eqBdr.b,255);
                 SDL_RenderDrawLine(renderer,548,sy+25,1050,sy+25);
                 renderText(renderer,fNorm,"Replace x in Eq2 with the expression from Step 1:",558,sy+30,darkTxt);
                 sprintf(sbuf,"%.0f * {[(%.0f - %.0fy^%d)/%.0f]^(1/%d)}^%d + %.0fy^%d = %.0f",
                         sA2,sC1,sB1,sn2,sA1,sn1,sm1, sB2,sm2,sC2);
-                renderBold(renderer,fSmall,sbuf,558,sy+50,(SDL_Color){180,90,0,255});
-                renderText(renderer,fSmall,"This gives a single equation in y only.",558,sy+70,hintCol);
-                sy += 100;
+                renderBold(renderer,fSmall,sbuf,558,sy+54,(SDL_Color){180,90,0,255});
+                renderText(renderer,fSmall,"This gives a single equation in y only.",558,sy+78,hintCol);
+                sy += 108;
 
-                drawPanel(renderer,534,sy,526,70,(SDL_Color){228,242,255,255},
+                drawPanel(renderer,534,sy,526,80,(SDL_Color){228,242,255,255},
                           (SDL_Color){110,145,210,255});
                 renderBold(renderer,fMed,"STEP 3: Solve for y",548,sy+5,
                            (SDL_Color){30,50,160,255});
@@ -1103,10 +1103,10 @@ int main(int argc, char* argv[]) {
                 SDL_RenderDrawLine(renderer,548,sy+25,1050,sy+25);
                 renderText(renderer,fNorm,"Solving the substituted equation for y:",558,sy+30,darkTxt);
                 sprintf(sbuf,"y = %.6f", solY);
-                renderBold(renderer,fNorm,sbuf,558,sy+50,(SDL_Color){30,50,160,255});
-                sy += 80;
+                renderBold(renderer,fNorm,sbuf,558,sy+54,(SDL_Color){30,50,160,255});
+                sy += 88;
 
-                drawPanel(renderer,534,sy,526,110,(SDL_Color){230,252,248,255},eqBdr);
+                drawPanel(renderer,534,sy,526,120,(SDL_Color){230,252,248,255},eqBdr);
                 renderBold(renderer,fMed,"STEP 4: Back-substitute y to find x",548,sy+5,secCol);
                 SDL_SetRenderDrawColor(renderer,eqBdr.r,eqBdr.g,eqBdr.b,255);
                 SDL_RenderDrawLine(renderer,548,sy+25,1050,sy+25);
@@ -1115,23 +1115,23 @@ int main(int argc, char* argv[]) {
                 renderText(renderer,fSmall,sbuf,558,sy+30,darkTxt);
                 sprintf(sbuf,"x = [(%.0f - %.6f) / %.0f]^(1/%d)",
                         sC1, step4_byN2, sA1, sn1);
-                renderText(renderer,fSmall,sbuf,558,sy+48,darkTxt);
+                renderText(renderer,fSmall,sbuf,558,sy+52,darkTxt);
                 sprintf(sbuf,"x = [%.6f]^(1/%d)", step4_inner, sn1);
-                renderText(renderer,fSmall,sbuf,558,sy+66,darkTxt);
+                renderText(renderer,fSmall,sbuf,558,sy+74,darkTxt);
                 sprintf(sbuf,"x = %.6f", solX);
-                renderBold(renderer,fNorm,sbuf,558,sy+86,(SDL_Color){0,120,112,255});
-                sy += 120;
+                renderBold(renderer,fNorm,sbuf,558,sy+96,(SDL_Color){0,120,112,255});
+                sy += 128;
 
-                drawPanel(renderer,534,sy,526,50,
+                drawPanel(renderer,534,sy,526,55,
                           (SDL_Color){215,255,238,255},(SDL_Color){88,185,142,255});
                 renderBold(renderer,fMed,"SOLUTION",548,sy+5,(SDL_Color){0,100,58,255});
                 SDL_SetRenderDrawColor(renderer,88,185,142,255);
                 SDL_RenderDrawLine(renderer,548,sy+25,1050,sy+25);
                 sprintf(sbuf,"x = %.3f       y = %.3f", solX, solY);
                 renderBold(renderer,fMed,sbuf,600,sy+30,(SDL_Color){0,110,65,255});
-                sy += 60;
+                sy += 62;
 
-                drawPanel(renderer,534,sy,526,100,
+                drawPanel(renderer,534,sy,526,110,
                           (SDL_Color){238,232,255,255},(SDL_Color){138,118,210,255});
                 renderBold(renderer,fMed,"CHECKING",548,sy+5,(SDL_Color){80,48,170,255});
                 SDL_SetRenderDrawColor(renderer,138,118,210,255);
@@ -1146,14 +1146,14 @@ int main(int argc, char* argv[]) {
                         sA1,solX,sn1, sB1,solY,sn2, chk1);
                 renderText(renderer,fSmall,sbuf,558,sy+30,darkTxt);
                 sprintf(sbuf,"Expected: %.0f     %s", sC1, ok1 ? "PASS" : "FAIL");
-                renderText(renderer,fSmall,sbuf,558,sy+47,
+                renderText(renderer,fSmall,sbuf,558,sy+50,
                            ok1?(SDL_Color){0,128,60,255}:(SDL_Color){200,30,30,255});
 
                 sprintf(sbuf,"Eq2:  %.0f*(%.3f)^%d + %.0f*(%.3f)^%d  =  %.4f",
                         sA2,solX,sm1, sB2,solY,sm2, chk2);
-                renderText(renderer,fSmall,sbuf,558,sy+66,darkTxt);
+                renderText(renderer,fSmall,sbuf,558,sy+72,darkTxt);
                 sprintf(sbuf,"Expected: %.0f     %s", sC2, ok2 ? "PASS" : "FAIL");
-                renderText(renderer,fSmall,sbuf,558,sy+83,
+                renderText(renderer,fSmall,sbuf,558,sy+92,
                            ok2?(SDL_Color){0,128,60,255}:(SDL_Color){200,30,30,255});
 
             } else {
