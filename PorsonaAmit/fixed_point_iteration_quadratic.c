@@ -206,7 +206,7 @@ static void drawMountains(SDL_Renderer* rr, int baseY, int w) {
             }
         }
     }
-    /* snow caps on tallest peaks */
+ 
     int peaks[][2] = {{200,baseY-210},{480,baseY-260},{900,baseY-300},{1200,baseY-280},{1500,baseY-250}};
     int np = 5;
     for (int p = 0; p < np; p++) {
@@ -222,7 +222,7 @@ static void drawMountains(SDL_Renderer* rr, int baseY, int w) {
     }
 }
 
-/* --------------------------------------------------------------- graph --- */
+
 static void drawGraph(SDL_Renderer* rr, TTF_Font* fSmall,
                       double a, double b, double c,
                       double root, int hasRoot,
@@ -247,14 +247,13 @@ static void drawGraph(SDL_Renderer* rr, TTF_Font* fSmall,
 
     drawPanel(rr,GX,GY,GW,GH,(SDL_Color){255,242,250,255},(SDL_Color){215,130,185,255});
 
-    /* grid */
+
     SDL_SetRenderDrawColor(rr,248,225,242,255);
     for (int i=0;i<=10;i++) {
         SDL_RenderDrawLine(rr,GX+i*GW/10,GY,GX+i*GW/10,GY+GH);
         SDL_RenderDrawLine(rr,GX,GY+i*GH/10,GX+GW,GY+i*GH/10);
     }
 
-    /* axes */
     int ox=GX+(int)((-xMin)/(xMax-xMin)*GW);
     int oy=GY+GH-(int)((-yMin)/(yMax-yMin)*GH);
     SDL_SetRenderDrawColor(rr,165,50,125,255);
@@ -263,7 +262,7 @@ static void drawGraph(SDL_Renderer* rr, TTF_Font* fSmall,
     renderText(rr,fSmall,"x",GX+GW-13,oy+4,(SDL_Color){165,50,125,255});
     renderText(rr,fSmall,"y",ox+4,GY+4,(SDL_Color){165,50,125,255});
 
-    /* curve */
+ 
     int prevPx=-1, prevPy=-1;
     for (int px=0;px<GW;px++) {
         double xv=xMin+(double)px/GW*(xMax-xMin);
@@ -279,7 +278,6 @@ static void drawGraph(SDL_Renderer* rr, TTF_Font* fSmall,
         }
     }
 
-    /* root marker */
     if (hasRoot) {
         int rpx=GX+(int)((root-xMin)/(xMax-xMin)*GW);
         double rfy=feval(root,a,b,c);
@@ -306,7 +304,7 @@ static void drawGraph(SDL_Renderer* rr, TTF_Font* fSmall,
     sprintf(rb,"%.1f",xMin); renderText(rr,fSmall,rb,GX+2,oy+5,(SDL_Color){185,100,165,180});
     sprintf(rb,"%.1f",xMax); renderText(rr,fSmall,rb,GX+GW-30,oy+5,(SDL_Color){185,100,165,180});
 
-    /* === hover crosshair & tooltip === */
+
     if (mouseX >= GX && mouseX <= GX+GW && mouseY >= GY && mouseY <= GY+GH) {
         SDL_Rect clipG = {GX, GY, GW, GH};
         SDL_RenderSetClipRect(rr, &clipG);
@@ -342,7 +340,7 @@ static void drawGraph(SDL_Renderer* rr, TTF_Font* fSmall,
     }
 }
 
-/* ================================================================ main === */
+
 int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
@@ -350,22 +348,40 @@ int main(int argc, char* argv[]) {
     SDL_Window* window = SDL_CreateWindow(
         "Fixed Point Iteration - Quadratic Equation",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        WIN_W, WIN_H, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+        1280, 760, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1,
         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     SDL_RenderSetLogicalSize(renderer, WIN_W, WIN_H);
 
-    TTF_Font* fHuge  = TTF_OpenFont("font.ttf", 40);
-    TTF_Font* fBig   = TTF_OpenFont("font.ttf", 32);
-    TTF_Font* fTitle = TTF_OpenFont("font.ttf", 27);
-    TTF_Font* fLarge = TTF_OpenFont("font.ttf", 23);
-    TTF_Font* fMed   = TTF_OpenFont("font.ttf", 20);
-    TTF_Font* fNorm  = TTF_OpenFont("font.ttf", 18);
-    TTF_Font* fSmall = TTF_OpenFont("font.ttf", 16);
+    TTF_Font* fHuge  = TTF_OpenFont("font.ttf", 52);
+    TTF_Font* fBig   = TTF_OpenFont("font.ttf", 42);
+    TTF_Font* fTitle = TTF_OpenFont("font.ttf", 34);
+    TTF_Font* fLarge = TTF_OpenFont("font.ttf", 28);
+    TTF_Font* fMed   = TTF_OpenFont("font.ttf", 25);
+    TTF_Font* fNorm  = TTF_OpenFont("font.ttf", 22);
+    TTF_Font* fSmall = TTF_OpenFont("font.ttf", 20);
 
     if (!fHuge||!fBig||!fTitle||!fLarge||!fMed||!fNorm||!fSmall) {
         printf("Font error: %s\n", TTF_GetError()); return 1;
     }
+
+    /* Pre-render static background (gradient + mountains + ground) once for performance */
+    SDL_Texture* bgTexture = SDL_CreateTexture(renderer,
+        SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H);
+    SDL_SetRenderTarget(renderer, bgTexture);
+    for (int i=0;i<WIN_H;i++) {
+        float t=(float)i/WIN_H;
+        int rv=(int)(255 - t*20);
+        int gv=(int)(215 - t*70);
+        int bv=(int)(235 - t*65);
+        SDL_SetRenderDrawColor(renderer,rv,gv,bv,255);
+        SDL_RenderDrawLine(renderer,0,i,WIN_W,i);
+    }
+    drawMountains(renderer, WIN_H-60, WIN_W);
+    SDL_SetRenderDrawColor(renderer,215,100,170,255);
+    SDL_Rect bgGround = {0, WIN_H-60, WIN_W, 60};
+    SDL_RenderFillRect(renderer, &bgGround);
+    SDL_SetRenderTarget(renderer, NULL);
 
     InputBox inputs[4];
     const char* labels[] = {"A","B","C","x0"};
@@ -418,7 +434,11 @@ int main(int argc, char* argv[]) {
             if (ev.type == SDL_QUIT) quit = 1;
 
             if (ev.type == SDL_MOUSEBUTTONDOWN) {
-                int mx=ev.button.x, my=ev.button.y;
+                /* Scale physical window coords to logical canvas coords */
+                int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
+                float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
+                int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
+                int mx=(int)((ev.button.x-_xo2)/_sc2),my=(int)((ev.button.y-_yo2)/_sc2);
 
                 /* --- Front page events --- */
                 if (screen == 0) {
@@ -531,7 +551,11 @@ int main(int argc, char* argv[]) {
             }
 
             if (ev.type==SDL_MOUSEMOTION) {
-                int mx=ev.motion.x, my=ev.motion.y;
+                /* Scale physical window coords to logical canvas coords */
+                int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
+                float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
+                int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
+                int mx=(int)((ev.motion.x-_xo2)/_sc2),my=(int)((ev.motion.y-_yo2)/_sc2);
                 btnStart.hovered   = (mx>=btnStart.rect.x&&mx<btnStart.rect.x+btnStart.rect.w&&
                                       my>=btnStart.rect.y&&my<btnStart.rect.y+btnStart.rect.h);
                 if (screen != 2) continue;
@@ -587,24 +611,8 @@ int main(int argc, char* argv[]) {
             if (loadProgress >= 1.0f) { loadProgress = 1.0f; screen = 2; }
         }
 
-        /* Pink gradient background */
-
-        for (int i=0;i<WIN_H;i++) {
-            float t=(float)i/WIN_H;
-            int rv=(int)(255 - t*20);
-            int gv=(int)(215 - t*70);
-            int bv=(int)(235 - t*65);
-            SDL_SetRenderDrawColor(renderer,rv,gv,bv,255);
-            SDL_RenderDrawLine(renderer,0,i,WIN_W,i);
-        }
-
-        /* draw mountain silhouettes in lower portion */
-        drawMountains(renderer, WIN_H - 60, WIN_W);
-
-        /* ground fill at bottom */
-        SDL_SetRenderDrawColor(renderer,215,100,170,255);
-        SDL_Rect ground = {0, WIN_H-60, WIN_W, 60};
-        SDL_RenderFillRect(renderer,&ground);
+        /* Background (pre-rendered texture — gradient + mountains + ground) */
+        SDL_RenderCopy(renderer, bgTexture, NULL, NULL);
 
         /* ===================== FRONT PAGE (screen 0) ===================== */
         if (screen == 0) {
@@ -1167,7 +1175,7 @@ int main(int argc, char* argv[]) {
             }
 
             SDL_RenderPresent(renderer);
-            SDL_Delay(16);
+            SDL_Delay(33); /* 30fps during loading screen to reduce CPU load */
             continue;
         }
 
@@ -1559,6 +1567,7 @@ int main(int argc, char* argv[]) {
     TTF_CloseFont(fHuge); TTF_CloseFont(fBig); TTF_CloseFont(fTitle);
     TTF_CloseFont(fLarge); TTF_CloseFont(fMed);
     TTF_CloseFont(fNorm); TTF_CloseFont(fSmall);
+    SDL_DestroyTexture(bgTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     TTF_Quit();
