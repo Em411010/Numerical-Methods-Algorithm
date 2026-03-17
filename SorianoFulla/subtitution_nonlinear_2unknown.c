@@ -84,8 +84,14 @@ static void renderText(SDL_Renderer* r, TTF_Font* f, const char* t,
 
 static void renderBold(SDL_Renderer* r, TTF_Font* f, const char* t,
                        int x, int y, SDL_Color c) {
-    renderText(r, f, t, x,   y, c);
-    renderText(r, f, t, x+1, y, c);
+    SDL_Surface* s = TTF_RenderUTF8_Blended(f, t, c);
+    if (!s) return;
+    SDL_Texture* tx = SDL_CreateTextureFromSurface(r, s);
+    SDL_Rect rc1 = {x, y, s->w, s->h};
+    SDL_Rect rc2 = {x+1, y, s->w, s->h};
+    SDL_RenderCopy(r, tx, NULL, &rc1);
+    SDL_RenderCopy(r, tx, NULL, &rc2);
+    SDL_FreeSurface(s); SDL_DestroyTexture(tx);
 }
 
 static int textW(TTF_Font* f, const char* t) {
@@ -369,7 +375,7 @@ int main(int argc, char* argv[]) {
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         1280, 720, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1,
-        SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+        SDL_RENDERER_ACCELERATED);
     SDL_RenderSetLogicalSize(renderer, WIN_W, WIN_H);
 
     TTF_Font* fHuge  = TTF_OpenFont("font.ttf", 46);
@@ -429,13 +435,22 @@ int main(int argc, char* argv[]) {
         inputs[i].active = 0;
         inputs[i].rect = (SDL_Rect){0,0,80,36};
     }
+    /* Set actual input positions now (not in render loop) */
+    {
+        int boxW = 60, boxH = 36;
+        int bx[5] = {40, 122, 210, 290, 378};
+        for (int i = 0; i < 5; i++) {
+            inputs[i].rect   = (SDL_Rect){bx[i], 258, boxW, boxH};
+            inputs[5+i].rect = (SDL_Rect){bx[i], 376, boxW, boxH};
+        }
+    }
 
     Button btnCompute = {{55, 553, 175, 46}, "COMPUTE", 0, 0};
     Button btnClear   = {{255,553, 175, 46}, "CLEAR",   0, 0};
     Button btnBack    = {{30, 30, 160, 50},  "< BACK",  0, 0};
     Button btnConfirmYes = {{WIN_W/2-130, WIN_H/2+30, 110, 44}, "YES",    0, 0};
     Button btnConfirmNo  = {{WIN_W/2+20,  WIN_H/2+30, 110, 44}, "CANCEL", 0, 0};
-    Button btnSolverBack = {{0, 0, 170, 44}, "< BACK", 0, 0};
+    Button btnSolverBack = {{WIN_W-200, 16, 170, 44}, "< BACK", 0, 0};
 
     int    hasSol = 0, hasError = 0, activeInput = -1, quit = 0, showConfirm = 0;
     double solX = 0, solY = 0;
@@ -448,24 +463,23 @@ int main(int argc, char* argv[]) {
     SDL_StartTextInput();
     SDL_Event ev;
 
+    Uint32 lastLoadDraw = 0;
     while (!quit) {
+        Uint32 frameStart = SDL_GetTicks();
         SDL_Rect cardSolver = {300, 320, 400, 280};
         SDL_Rect cardAbout  = {900, 320, 400, 280};
 
         while (SDL_PollEvent(&ev)) {
             if (ev.type == SDL_QUIT) quit = 1;
-            /* Any event at all means we need to redraw */
+            /* Mark dirty for events that change content (NOT mouse motion) */
             if (ev.type == SDL_MOUSEBUTTONDOWN || ev.type == SDL_MOUSEBUTTONUP ||
-                ev.type == SDL_MOUSEMOTION || ev.type == SDL_TEXTINPUT ||
+                ev.type == SDL_TEXTINPUT ||
                 ev.type == SDL_KEYDOWN || ev.type == SDL_WINDOWEVENT)
                 screenDirty = 1;
 
             if (screen == SCREEN_LANDING) {
                 if (ev.type == SDL_MOUSEBUTTONDOWN) {
-                    int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
-                    float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
-                    int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
-                    int mx=(int)((ev.button.x-_xo2)/_sc2),my=(int)((ev.button.y-_yo2)/_sc2);
+                    int mx = ev.button.x, my = ev.button.y;
                     if (mx>=cardSolver.x && mx<cardSolver.x+cardSolver.w &&
                         my>=cardSolver.y && my<cardSolver.y+cardSolver.h) {
                         screen = SCREEN_LOADING;
@@ -479,23 +493,19 @@ int main(int argc, char* argv[]) {
                     }
                 }
                 if (ev.type == SDL_MOUSEMOTION) {
-                    int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
-                    float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
-                    int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
-                    int mx=(int)((ev.motion.x-_xo2)/_sc2),my=(int)((ev.motion.y-_yo2)/_sc2);
+                    int mx = ev.motion.x, my = ev.motion.y;
+                    int oldHS = hoverSolver, oldHA = hoverAbout;
                     hoverSolver = (mx>=cardSolver.x && mx<cardSolver.x+cardSolver.w &&
                                    my>=cardSolver.y && my<cardSolver.y+cardSolver.h);
                     hoverAbout  = (mx>=cardAbout.x  && mx<cardAbout.x+cardAbout.w &&
                                    my>=cardAbout.y  && my<cardAbout.y+cardAbout.h);
+                    if (hoverSolver != oldHS || hoverAbout != oldHA) screenDirty = 1;
                 }
             }
 
             else if (screen == SCREEN_ABOUT) {
                 if (ev.type == SDL_MOUSEBUTTONDOWN) {
-                    int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
-                    float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
-                    int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
-                    int mx=(int)((ev.button.x-_xo2)/_sc2),my=(int)((ev.button.y-_yo2)/_sc2);
+                    int mx = ev.button.x, my = ev.button.y;
                     if (mx>=btnBack.rect.x && mx<btnBack.rect.x+btnBack.rect.w &&
                         my>=btnBack.rect.y && my<btnBack.rect.y+btnBack.rect.h) {
                         screen = SCREEN_LANDING;
@@ -503,21 +513,17 @@ int main(int argc, char* argv[]) {
                     }
                 }
                 if (ev.type == SDL_MOUSEMOTION) {
-                    int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
-                    float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
-                    int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
-                    int mx=(int)((ev.motion.x-_xo2)/_sc2),my=(int)((ev.motion.y-_yo2)/_sc2);
+                    int mx = ev.motion.x, my = ev.motion.y;
+                    int oldH = btnBack.hovered;
                     btnBack.hovered = (mx>=btnBack.rect.x && mx<btnBack.rect.x+btnBack.rect.w &&
                                        my>=btnBack.rect.y && my<btnBack.rect.y+btnBack.rect.h);
+                    if (btnBack.hovered != oldH) screenDirty = 1;
                 }
             }
 
             else if (screen == SCREEN_SOLVER) {
                 if (ev.type == SDL_MOUSEBUTTONDOWN) {
-                    int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
-                    float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
-                    int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
-                    int mx=(int)((ev.button.x-_xo2)/_sc2),my=(int)((ev.button.y-_yo2)/_sc2);
+                    int mx = ev.button.x, my = ev.button.y;
 
                     /* clear confirm modal takes priority */
                     if (showConfirm) {
@@ -639,15 +645,18 @@ int main(int argc, char* argv[]) {
                 }
 
                 if (ev.type == SDL_MOUSEMOTION) {
-                    int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
-                    float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
-                    int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
-                    int mx=(int)((ev.motion.x-_xo2)/_sc2),my=(int)((ev.motion.y-_yo2)/_sc2);
+                    int mx = ev.motion.x, my = ev.motion.y;
+                    int oh1=btnCompute.hovered, oh2=btnClear.hovered,
+                        oh3=btnSolverBack.hovered, oh4=btnConfirmYes.hovered,
+                        oh5=btnConfirmNo.hovered;
 #define HOVER(b) ((b).hovered = (mx>=(b).rect.x && mx<(b).rect.x+(b).rect.w && \
                                   my>=(b).rect.y && my<(b).rect.y+(b).rect.h))
                     HOVER(btnCompute); HOVER(btnClear);
                     HOVER(btnSolverBack);
                     HOVER(btnConfirmYes); HOVER(btnConfirmNo);
+                    if (btnCompute.hovered!=oh1 || btnClear.hovered!=oh2 ||
+                        btnSolverBack.hovered!=oh3 || btnConfirmYes.hovered!=oh4 ||
+                        btnConfirmNo.hovered!=oh5) screenDirty = 1;
                 }
 
                 if (ev.type == SDL_TEXTINPUT && activeInput >= 0 && !showConfirm) {
@@ -679,15 +688,16 @@ int main(int argc, char* argv[]) {
 
         if (screen == SCREEN_LOADING) {
             Uint32 elapsed = SDL_GetTicks() - loadStart;
-            screenDirty = 1; /* loading screen always animates */
-            if (elapsed >= 5000) { screen = SCREEN_SOLVER; graphDirty = 1; }
+            Uint32 now = SDL_GetTicks();
+            if (now - lastLoadDraw >= 50) { screenDirty = 1; lastLoadDraw = now; }
+            if (elapsed >= 5000) { screen = SCREEN_SOLVER; graphDirty = 1; screenDirty = 1; }
         }
 
         /* If nothing changed, just present the cached screen texture and skip rendering */
         if (!screenDirty) {
             SDL_RenderCopy(renderer, screenTex, NULL, NULL);
             SDL_RenderPresent(renderer);
-            SDL_Delay(33);
+            { Uint32 ft = SDL_GetTicks() - frameStart; if (ft < 16) SDL_Delay(16 - ft); }
             continue;
         }
 
@@ -965,10 +975,6 @@ int main(int argc, char* argv[]) {
 
             drawPanel(renderer, 30, 215, 462, 108, eqBg, eqBdr);
             renderBold(renderer, fNorm, "EQUATION 1", 193, 220, secCol);
-            int boxW = 60, boxH = 36;
-            int bx[5] = {40, 122, 210, 290, 378};
-            for (int i = 0; i < 5; i++)
-                inputs[i].rect = (SDL_Rect){bx[i], 258, boxW, boxH};
             renderText(renderer, fSmall, "x^", 103, 268, darkTxt);
             renderText(renderer, fNorm,  "+",  188, 265, darkTxt);
             renderText(renderer, fSmall, "y^", 273, 268, darkTxt);
@@ -976,8 +982,6 @@ int main(int argc, char* argv[]) {
 
             drawPanel(renderer, 30, 333, 462, 108, eqBg, eqBdr);
             renderBold(renderer, fNorm, "EQUATION 2", 193, 338, secCol);
-            for (int i = 0; i < 5; i++)
-                inputs[5+i].rect = (SDL_Rect){bx[i], 376, boxW, boxH};
             renderText(renderer, fSmall, "x^", 103, 386, darkTxt);
             renderText(renderer, fNorm,  "+",  188, 383, darkTxt);
             renderText(renderer, fSmall, "y^", 273, 386, darkTxt);
@@ -1232,7 +1236,7 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderTarget(renderer, NULL);
         SDL_RenderCopy(renderer, screenTex, NULL, NULL);
         SDL_RenderPresent(renderer);
-        SDL_Delay(33);
+        { Uint32 ft = SDL_GetTicks() - frameStart; if (ft < 16) SDL_Delay(16 - ft); }
     }
 
     TTF_CloseFont(fHuge);  TTF_CloseFont(fBig);
