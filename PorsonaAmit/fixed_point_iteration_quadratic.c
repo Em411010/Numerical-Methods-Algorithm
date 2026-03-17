@@ -353,13 +353,13 @@ int main(int argc, char* argv[]) {
         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     SDL_RenderSetLogicalSize(renderer, WIN_W, WIN_H);
 
-    TTF_Font* fHuge  = TTF_OpenFont("font.ttf", 52);
-    TTF_Font* fBig   = TTF_OpenFont("font.ttf", 42);
-    TTF_Font* fTitle = TTF_OpenFont("font.ttf", 34);
-    TTF_Font* fLarge = TTF_OpenFont("font.ttf", 28);
-    TTF_Font* fMed   = TTF_OpenFont("font.ttf", 25);
-    TTF_Font* fNorm  = TTF_OpenFont("font.ttf", 22);
-    TTF_Font* fSmall = TTF_OpenFont("font.ttf", 20);
+    TTF_Font* fHuge  = TTF_OpenFont("font.ttf", 40);
+    TTF_Font* fBig   = TTF_OpenFont("font.ttf", 32);
+    TTF_Font* fTitle = TTF_OpenFont("font.ttf", 27);
+    TTF_Font* fLarge = TTF_OpenFont("font.ttf", 23);
+    TTF_Font* fMed   = TTF_OpenFont("font.ttf", 20);
+    TTF_Font* fNorm  = TTF_OpenFont("font.ttf", 18);
+    TTF_Font* fSmall = TTF_OpenFont("font.ttf", 16);
 
     if (!fHuge||!fBig||!fTitle||!fLarge||!fMed||!fNorm||!fSmall) {
         printf("Font error: %s\n", TTF_GetError()); return 1;

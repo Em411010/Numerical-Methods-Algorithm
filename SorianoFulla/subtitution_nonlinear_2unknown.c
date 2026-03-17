@@ -372,19 +372,49 @@ int main(int argc, char* argv[]) {
         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     SDL_RenderSetLogicalSize(renderer, WIN_W, WIN_H);
 
-    TTF_Font* fHuge  = TTF_OpenFont("font.ttf", 38);
-    TTF_Font* fBig   = TTF_OpenFont("font.ttf", 30);
-    TTF_Font* fTitle = TTF_OpenFont("font.ttf", 29);
-    TTF_Font* fLarge = TTF_OpenFont("font.ttf", 22);
-    TTF_Font* fMed   = TTF_OpenFont("font.ttf", 19);
-    TTF_Font* fNorm  = TTF_OpenFont("font.ttf", 17);
-    TTF_Font* fSmall = TTF_OpenFont("font.ttf", 15);
-    TTF_Font* fSup   = TTF_OpenFont("font.ttf", 13);
-    TTF_Font* fSub   = TTF_OpenFont("font.ttf", 13);
+    TTF_Font* fHuge  = TTF_OpenFont("font.ttf", 46);
+    TTF_Font* fBig   = TTF_OpenFont("font.ttf", 37);
+    TTF_Font* fTitle = TTF_OpenFont("font.ttf", 35);
+    TTF_Font* fLarge = TTF_OpenFont("font.ttf", 28);
+    TTF_Font* fMed   = TTF_OpenFont("font.ttf", 24);
+    TTF_Font* fNorm  = TTF_OpenFont("font.ttf", 21);
+    TTF_Font* fSmall = TTF_OpenFont("font.ttf", 19);
+    TTF_Font* fSup   = TTF_OpenFont("font.ttf", 16);
+    TTF_Font* fSub   = TTF_OpenFont("font.ttf", 16);
 
     if (!fHuge||!fBig||!fTitle||!fLarge||!fMed||!fNorm||!fSmall||!fSup||!fSub) {
         printf("Font error: %s\n", TTF_GetError()); return 1;
     }
+
+    /* Graph texture cache — expensive per-pixel curve tracing only runs when solution changes */
+    SDL_Texture* graphTex = NULL;
+    int graphDirty = 1;
+
+    /* Pre-render Hello Kitty at each needed size into GPU textures (eliminates per-pixel lag) */
+    /* Sizes used: 22, 40, 65, 90 */
+    typedef struct { SDL_Texture* tex; int size, w, h; } KittyCache;
+    KittyCache kittyCache[4];
+    int kittySizes[4] = {22, 40, 65, 90};
+    for (int ki = 0; ki < 4; ki++) {
+        int ks = kittySizes[ki];
+        int tw = ks * 3 + 20, th = ks * 3 + 20;
+        kittyCache[ki].size = ks;
+        kittyCache[ki].w = tw;
+        kittyCache[ki].h = th;
+        kittyCache[ki].tex = SDL_CreateTexture(renderer,
+            SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, tw, th);
+        SDL_SetTextureBlendMode(kittyCache[ki].tex, SDL_BLENDMODE_BLEND);
+        SDL_SetRenderTarget(renderer, kittyCache[ki].tex);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+        SDL_RenderClear(renderer);
+        drawHelloKitty(renderer, tw/2, th/2 + ks/4, ks);
+        SDL_SetRenderTarget(renderer, NULL);
+    }
+
+    /* Screen-level cache: only re-render when something changes */
+    SDL_Texture* screenTex = SDL_CreateTexture(renderer,
+        SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H);
+    int screenDirty = 1; /* 1 = must redraw, 0 = just blit cached texture */
 
     Screen screen = SCREEN_LANDING;
     Uint32 loadStart = 0;
@@ -424,22 +454,35 @@ int main(int argc, char* argv[]) {
 
         while (SDL_PollEvent(&ev)) {
             if (ev.type == SDL_QUIT) quit = 1;
+            /* Any event at all means we need to redraw */
+            if (ev.type == SDL_MOUSEBUTTONDOWN || ev.type == SDL_MOUSEBUTTONUP ||
+                ev.type == SDL_MOUSEMOTION || ev.type == SDL_TEXTINPUT ||
+                ev.type == SDL_KEYDOWN || ev.type == SDL_WINDOWEVENT)
+                screenDirty = 1;
 
             if (screen == SCREEN_LANDING) {
                 if (ev.type == SDL_MOUSEBUTTONDOWN) {
-                    int mx = ev.button.x, my = ev.button.y;
+                    int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
+                    float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
+                    int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
+                    int mx=(int)((ev.button.x-_xo2)/_sc2),my=(int)((ev.button.y-_yo2)/_sc2);
                     if (mx>=cardSolver.x && mx<cardSolver.x+cardSolver.w &&
                         my>=cardSolver.y && my<cardSolver.y+cardSolver.h) {
                         screen = SCREEN_LOADING;
                         loadStart = SDL_GetTicks();
+                        screenDirty = 1;
                     }
                     if (mx>=cardAbout.x && mx<cardAbout.x+cardAbout.w &&
                         my>=cardAbout.y && my<cardAbout.y+cardAbout.h) {
                         screen = SCREEN_ABOUT;
+                        screenDirty = 1;
                     }
                 }
                 if (ev.type == SDL_MOUSEMOTION) {
-                    int mx = ev.motion.x, my = ev.motion.y;
+                    int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
+                    float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
+                    int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
+                    int mx=(int)((ev.motion.x-_xo2)/_sc2),my=(int)((ev.motion.y-_yo2)/_sc2);
                     hoverSolver = (mx>=cardSolver.x && mx<cardSolver.x+cardSolver.w &&
                                    my>=cardSolver.y && my<cardSolver.y+cardSolver.h);
                     hoverAbout  = (mx>=cardAbout.x  && mx<cardAbout.x+cardAbout.w &&
@@ -449,14 +492,21 @@ int main(int argc, char* argv[]) {
 
             else if (screen == SCREEN_ABOUT) {
                 if (ev.type == SDL_MOUSEBUTTONDOWN) {
-                    int mx = ev.button.x, my = ev.button.y;
+                    int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
+                    float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
+                    int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
+                    int mx=(int)((ev.button.x-_xo2)/_sc2),my=(int)((ev.button.y-_yo2)/_sc2);
                     if (mx>=btnBack.rect.x && mx<btnBack.rect.x+btnBack.rect.w &&
                         my>=btnBack.rect.y && my<btnBack.rect.y+btnBack.rect.h) {
                         screen = SCREEN_LANDING;
+                        screenDirty = 1;
                     }
                 }
                 if (ev.type == SDL_MOUSEMOTION) {
-                    int mx = ev.motion.x, my = ev.motion.y;
+                    int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
+                    float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
+                    int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
+                    int mx=(int)((ev.motion.x-_xo2)/_sc2),my=(int)((ev.motion.y-_yo2)/_sc2);
                     btnBack.hovered = (mx>=btnBack.rect.x && mx<btnBack.rect.x+btnBack.rect.w &&
                                        my>=btnBack.rect.y && my<btnBack.rect.y+btnBack.rect.h);
                 }
@@ -464,7 +514,10 @@ int main(int argc, char* argv[]) {
 
             else if (screen == SCREEN_SOLVER) {
                 if (ev.type == SDL_MOUSEBUTTONDOWN) {
-                    int mx = ev.button.x, my = ev.button.y;
+                    int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
+                    float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
+                    int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
+                    int mx=(int)((ev.button.x-_xo2)/_sc2),my=(int)((ev.button.y-_yo2)/_sc2);
 
                     /* clear confirm modal takes priority */
                     if (showConfirm) {
@@ -472,7 +525,7 @@ int main(int argc, char* argv[]) {
                             my>=btnConfirmYes.rect.y && my<btnConfirmYes.rect.y+btnConfirmYes.rect.h) {
                             showConfirm = 0;
                             for (int i = 0; i < 10; i++) strcpy(inputs[i].value, defaults[i]);
-                            hasSol = 0; hasError = 0;
+                            hasSol = 0; hasError = 0; graphDirty = 1;
                             strcpy(errorMsg, "");
                         }
                         if (mx>=btnConfirmNo.rect.x && mx<btnConfirmNo.rect.x+btnConfirmNo.rect.w &&
@@ -485,6 +538,7 @@ int main(int argc, char* argv[]) {
                         if (mx >= btnSolverBack.rect.x && mx < btnSolverBack.rect.x+btnSolverBack.rect.w &&
                             my >= btnSolverBack.rect.y && my < btnSolverBack.rect.y+btnSolverBack.rect.h) {
                             screen = SCREEN_LANDING;
+                            screenDirty = 1;
                         }
 
                         /* normal input handling */
@@ -501,8 +555,7 @@ int main(int argc, char* argv[]) {
                         if (mx >= btnCompute.rect.x && mx < btnCompute.rect.x+btnCompute.rect.w &&
                             my >= btnCompute.rect.y && my < btnCompute.rect.y+btnCompute.rect.h) {
                             btnCompute.clicked = 1;
-                            hasSol = 0; hasError = 0;
-                            strcpy(errorMsg, "");
+                        hasSol = 0; hasError = 0; graphDirty = 1;
 
                             sA1 = atof(inputs[0].value); sn1 = (int)round(atof(inputs[1].value));
                             sB1 = atof(inputs[2].value); sn2 = (int)round(atof(inputs[3].value));
@@ -586,7 +639,10 @@ int main(int argc, char* argv[]) {
                 }
 
                 if (ev.type == SDL_MOUSEMOTION) {
-                    int mx = ev.motion.x, my = ev.motion.y;
+                    int _ww2,_wh2; SDL_GetWindowSize(window,&_ww2,&_wh2);
+                    float _sc2=((float)_ww2/WIN_W<(float)_wh2/WIN_H)?(float)_ww2/WIN_W:(float)_wh2/WIN_H;
+                    int _xo2=(int)((_ww2-_sc2*WIN_W)/2),_yo2=(int)((_wh2-_sc2*WIN_H)/2);
+                    int mx=(int)((ev.motion.x-_xo2)/_sc2),my=(int)((ev.motion.y-_yo2)/_sc2);
 #define HOVER(b) ((b).hovered = (mx>=(b).rect.x && mx<(b).rect.x+(b).rect.w && \
                                   my>=(b).rect.y && my<(b).rect.y+(b).rect.h))
                     HOVER(btnCompute); HOVER(btnClear);
@@ -623,8 +679,21 @@ int main(int argc, char* argv[]) {
 
         if (screen == SCREEN_LOADING) {
             Uint32 elapsed = SDL_GetTicks() - loadStart;
-            if (elapsed >= 5000) screen = SCREEN_SOLVER;
+            screenDirty = 1; /* loading screen always animates */
+            if (elapsed >= 5000) { screen = SCREEN_SOLVER; graphDirty = 1; }
         }
+
+        /* If nothing changed, just present the cached screen texture and skip rendering */
+        if (!screenDirty) {
+            SDL_RenderCopy(renderer, screenTex, NULL, NULL);
+            SDL_RenderPresent(renderer);
+            SDL_Delay(33);
+            continue;
+        }
+
+        /* Render into the screen cache texture */
+        SDL_SetRenderTarget(renderer, screenTex);
+        screenDirty = 0;
 
         if (screen == SCREEN_LANDING) {
             SDL_SetRenderDrawColor(renderer, 255, 220, 230, 255);
@@ -642,10 +711,12 @@ int main(int argc, char* argv[]) {
                              "A solver program that makes you life easier",
                              cx, 180, gray);
 
-            /* Hello Kitty - left side */
-            drawHelloKitty(renderer, 140, 500, 65);
+            /* Hello Kitty - left side (cached texture, size=65 -> index 2) */
+            { SDL_Rect dst={140-kittyCache[2].w/2, 500-kittyCache[2].h/2+65/4, kittyCache[2].w, kittyCache[2].h};
+              SDL_RenderCopy(renderer, kittyCache[2].tex, NULL, &dst); }
             /* Hello Kitty - right side */
-            drawHelloKitty(renderer, WIN_W-140, 500, 65);
+            { SDL_Rect dst={WIN_W-140-kittyCache[2].w/2, 500-kittyCache[2].h/2+65/4, kittyCache[2].w, kittyCache[2].h};
+              SDL_RenderCopy(renderer, kittyCache[2].tex, NULL, &dst); }
 
             {
                 SDL_Color bg = hoverSolver ? (SDL_Color){185,185,185,255}
@@ -804,9 +875,11 @@ int main(int argc, char* argv[]) {
 
             renderCenterText(renderer, fLarge, "Loading Program", cx, 580, black);
 
-            /* Hello Kitty on loading screen - sides, no overlap with centered text */
-            drawHelloKitty(renderer, 155, 400, 90);
-            drawHelloKitty(renderer, WIN_W - 155, 400, 90);
+            /* Hello Kitty on loading screen - cached texture, size=90 -> index 3 */
+            { SDL_Rect dst={155-kittyCache[3].w/2, 400-kittyCache[3].h/2+90/4, kittyCache[3].w, kittyCache[3].h};
+              SDL_RenderCopy(renderer, kittyCache[3].tex, NULL, &dst); }
+            { SDL_Rect dst={WIN_W-155-kittyCache[3].w/2, 400-kittyCache[3].h/2+90/4, kittyCache[3].w, kittyCache[3].h};
+              SDL_RenderCopy(renderer, kittyCache[3].tex, NULL, &dst); }
 
             int barW = 420, barH = 42;
             int barX = cx - barW/2, barY = 620;
@@ -1091,9 +1164,20 @@ int main(int argc, char* argv[]) {
             drawPanel(renderer, 1085, 88, 500, 835, panelBg, panBdr);
             renderBold(renderer, fLarge, "GRAPH", 1295, 100, secCol);
 
-            drawGraph(renderer,fSmall,
-                      sA1,sn1,sB1,sn2,sC1, sA2,sm1,sB2,sm2,sC2,
-                      solX,solY,hasSol);
+            /* Cache graph — expensive per-pixel curve only redrawn when solution changes */
+            if (graphDirty) {
+                if (!graphTex)
+                    graphTex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888,
+                                                 SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H);
+                SDL_SetTextureBlendMode(graphTex, SDL_BLENDMODE_BLEND);
+                SDL_SetRenderTarget(renderer, graphTex);
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+                SDL_RenderClear(renderer);
+                drawGraph(renderer, fSmall, sA1,sn1,sB1,sn2,sC1, sA2,sm1,sB2,sm2,sC2, solX,solY,hasSol);
+                SDL_SetRenderTarget(renderer, screenTex); /* restore to screen cache */
+                graphDirty = 0;
+            }
+            if (graphTex) SDL_RenderCopy(renderer, graphTex, NULL, NULL);
 
             int LY = 635;
             drawPanel(renderer,1098,LY,462,88,eqBg,eqBdr);
@@ -1110,8 +1194,9 @@ int main(int argc, char* argv[]) {
                     SDL_RenderDrawPoint(renderer,1127+di,LY+76+dj);
             renderText(renderer,fNorm,"Solution Point",1153,LY+70,(SDL_Color){155,20,20,255});
 
-            /* Hello Kitty mascot in solver - bottom right corner */
-            drawHelloKitty(renderer, 1530, 855, 40);
+            /* Hello Kitty mascot in solver - cached texture, size=40 -> index 1 */
+            { SDL_Rect dst={1530-kittyCache[1].w/2, 855-kittyCache[1].h/2+40/4, kittyCache[1].w, kittyCache[1].h};
+              SDL_RenderCopy(renderer, kittyCache[1].tex, NULL, &dst); }
 
             /* ---- CLEAR CONFIRMATION MODAL ---- */
             if (showConfirm) {
@@ -1130,7 +1215,8 @@ int main(int argc, char* argv[]) {
                 renderCenterBold(renderer, fLarge, "Confirm Clear",
                                  mx2, my2-102, (SDL_Color){255,255,255,255});
 
-                drawHelloKitty(renderer, mx2, my2-42, 22);
+                { SDL_Rect dst={mx2-kittyCache[0].w/2, my2-42-kittyCache[0].h/2+22/4, kittyCache[0].w, kittyCache[0].h};
+                  SDL_RenderCopy(renderer, kittyCache[0].tex, NULL, &dst); }
 
                 renderCenterText(renderer, fNorm, "Are you sure you want to clear",
                                  mx2, my2+5, (SDL_Color){80,20,50,255});
@@ -1142,14 +1228,20 @@ int main(int argc, char* argv[]) {
 
         }
 
+        /* Finished drawing into screenTex; now blit to screen */
+        SDL_SetRenderTarget(renderer, NULL);
+        SDL_RenderCopy(renderer, screenTex, NULL, NULL);
         SDL_RenderPresent(renderer);
-        SDL_Delay(16);
+        SDL_Delay(33);
     }
 
     TTF_CloseFont(fHuge);  TTF_CloseFont(fBig);
     TTF_CloseFont(fTitle); TTF_CloseFont(fLarge); TTF_CloseFont(fMed);
     TTF_CloseFont(fNorm);  TTF_CloseFont(fSmall);
     TTF_CloseFont(fSup);   TTF_CloseFont(fSub);
+    if (graphTex) SDL_DestroyTexture(graphTex);
+    SDL_DestroyTexture(screenTex);
+    for (int ki = 0; ki < 4; ki++) SDL_DestroyTexture(kittyCache[ki].tex);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     TTF_Quit();
